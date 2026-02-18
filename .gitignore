@@ -1,0 +1,27 @@
+/target
+*.pyc
+__pycache__/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+grammar
+
+# CUDA local libs
+cuda_libs/
+
+# Profiling
+*.prof
+perf.data*

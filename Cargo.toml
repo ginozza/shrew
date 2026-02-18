@@ -1,0 +1,75 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/shrew-core",
+    "crates/shrew-cpu",
+    "crates/shrew-cuda",
+    "crates/shrew-ir",
+    "crates/shrew-nn",
+    "crates/shrew-optim",
+    "crates/shrew-data",
+    "crates/shrew",
+    "crates/shrew-cli",
+    "crates/shrew-python",
+    "examples/linear_regression",
+    "examples/mlp_xor",
+    "examples/mnist",
+    "examples/mnist_cnn",
+    "examples/char_gpt",
+    "examples/bench_ops",
+    "examples/rnn_sequence",
+    "examples/gpu_demo",
+]
+# Exclude shrew-cuda from default builds (requires CUDA toolkit)
+default-members = [
+    "crates/shrew-core",
+    "crates/shrew-cpu",
+    "crates/shrew-ir",
+    "crates/shrew-nn",
+    "crates/shrew-optim",
+    "crates/shrew-data",
+    "crates/shrew",
+    "crates/shrew-cli",
+    "examples/linear_regression",
+    "examples/mlp_xor",
+    "examples/mnist",
+    "examples/mnist_cnn",
+    "examples/char_gpt",
+    "examples/bench_ops",
+    "examples/rnn_sequence",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/ginozza/shrew"
+homepage = "https://github.com/ginozza/shrew"
+rust-version = "1.75.0"
+keywords = ["deep-learning", "machine-learning", "tensor", "autograd", "neural-network"]
+categories = ["science", "mathematics"]
+
+[workspace.dependencies]
+# Internal crates
+shrew = { path = "crates/shrew", version = "0.1.0" }
+shrew-core = { path = "crates/shrew-core", version = "0.1.0" }
+shrew-cpu = { path = "crates/shrew-cpu", version = "0.1.0" }
+shrew-cuda = { path = "crates/shrew-cuda", version = "0.1.0" }
+shrew-nn = { path = "crates/shrew-nn", version = "0.1.0" }
+shrew-optim = { path = "crates/shrew-optim", version = "0.1.0" }
+shrew-data = { path = "crates/shrew-data", version = "0.1.0" }
+shrew-ir = { path = "crates/shrew-ir", version = "0.1.0" }
+
+# External dependencies
+num-traits = "0.2"
+rayon = "1.10"
+rand = "0.8"
+rand_distr = "0.4"
+thiserror = "2.0"
+gemm = "0.18"
+half = { version = "2.4", features = ["num-traits", "std"] }
+serde_json = "1.0"
+cudarc = { version = "0.12", features = ["std", "cublas", "driver", "nvrtc", "cuda-12060"] }
+pyo3 = { version = "0.24", features = ["extension-module"] }
+numpy = "0.24"
+image = "0.25"
