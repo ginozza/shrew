@@ -1,0 +1,27 @@
+[submodule "crates/shrew-core"]
+	path = crates/shrew-core
+	url = https://github.com/ginozza/shrew-core.git
+[submodule "crates/shrew-cpu"]
+	path = crates/shrew-cpu
+	url = https://github.com/ginozza/shrew-cpu.git
+[submodule "crates/shrew-cuda"]
+	path = crates/shrew-cuda
+	url = https://github.com/ginozza/shrew-cuda.git
+[submodule "crates/shrew-data"]
+	path = crates/shrew-data
+	url = https://github.com/ginozza/shrew-data.git
+[submodule "crates/shrew-ir"]
+	path = crates/shrew-ir
+	url = https://github.com/ginozza/shrew-ir.git
+[submodule "crates/shrew-nn"]
+	path = crates/shrew-nn
+	url = https://github.com/ginozza/shrew-nn.git
+[submodule "crates/shrew-optim"]
+	path = crates/shrew-optim
+	url = https://github.com/ginozza/shrew-optim.git
+[submodule "crates/shrew-python"]
+	path = crates/shrew-python
+	url = https://github.com/ginozza/shrew-python.git
+[submodule "crates/shrew-cli"]
+	path = crates/shrew-cli
+	url = https://github.com/ginozza/shrew-cli.git
