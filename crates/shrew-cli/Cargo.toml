@@ -1,0 +1,19 @@
+[package]
+name = "shrew-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "CLI runner for Shrew .sw deep learning programs"
+
+[[bin]]
+name = "shrew"
+path = "src/main.rs"
+
+[dependencies]
+shrew.workspace = true
+shrew-core.workspace = true
+shrew-cpu.workspace = true
+shrew-ir.workspace = true
+shrew-optim.workspace = true
