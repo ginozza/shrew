@@ -1,0 +1,13 @@
+[package]
+name = "shrew-optim"
+description = "Optimizers (SGD, Adam, AdamW) for Shrew"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+shrew-core.workspace = true
