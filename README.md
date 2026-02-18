@@ -3,7 +3,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ginozza/shrew/actions"><img src="https://github.com/ginozza/shrew/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/ginozza/shrew/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License"></a>
   <a href="https://crates.io/crates/shrew"><img src="https://img.shields.io/crates/v/shrew.svg" alt="Crates.io"></a>
   <img src="https://img.shields.io/badge/rust-1.75%2B-orange.svg" alt="MSRV">
