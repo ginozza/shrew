@@ -1,0 +1,24 @@
+name: shrew-data
+
+on:
+  push:
+    paths:
+      - 'crates/shrew-data/**'
+      - '.github/workflows/shrew-data.yml'
+  pull_request:
+    paths:
+      - 'crates/shrew-data/**'
+      - '.github/workflows/shrew-data.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --package shrew-data --verbose
+    - name: Run tests
+      run: cargo test --package shrew-data --verbose

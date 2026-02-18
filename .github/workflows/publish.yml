@@ -1,0 +1,123 @@
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Publish Rust crates to crates.io (in dependency order)
+  # ─────────────────────────────────────────────────────────────
+  publish-crates:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Publish in dependency order with delay between crates
+      - name: Publish shrew-core
+        run: cargo publish -p shrew-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - run: sleep 30
+
+      - name: Publish shrew-cpu
+        run: cargo publish -p shrew-cpu --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - run: sleep 30
+
+      - name: Publish shrew-ir
+        run: cargo publish -p shrew-ir --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - run: sleep 30
+
+      - name: Publish shrew-nn
+        run: cargo publish -p shrew-nn --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - run: sleep 30
+
+      - name: Publish shrew-optim
+        run: cargo publish -p shrew-optim --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - run: sleep 30
+
+      - name: Publish shrew-data
+        run: cargo publish -p shrew-data --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - run: sleep 30
+
+      - name: Publish shrew (facade)
+        run: cargo publish -p shrew --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - run: sleep 30
+
+      - name: Publish shrew-cli
+        run: cargo publish -p shrew-cli --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────
+  # Publish Python wheels to PyPI
+  # ─────────────────────────────────────────────────────────────
+  publish-pypi:
+    name: Build Python wheels (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          manylinux: auto
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.target }}
+          path: dist/
+
+  upload-pypi:
+    name: Upload to PyPI
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheel-*
+          merge-multiple: true
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+
+  # ─────────────────────────────────────────────────────────────
+  # Create GitHub Release
+  # ─────────────────────────────────────────────────────────────
+  github-release:
+    name: GitHub Release
+    needs: [publish-crates, upload-pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheel-*
+          merge-multiple: true
+          path: dist/
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*

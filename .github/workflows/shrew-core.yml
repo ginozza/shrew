@@ -1,0 +1,24 @@
+name: shrew-core
+
+on:
+  push:
+    paths:
+      - 'crates/shrew-core/**'
+      - '.github/workflows/shrew-core.yml'
+  pull_request:
+    paths:
+      - 'crates/shrew-core/**'
+      - '.github/workflows/shrew-core.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --package shrew-core --verbose
+    - name: Run tests
+      run: cargo test --package shrew-core --verbose

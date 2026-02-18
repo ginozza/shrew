@@ -1,0 +1,24 @@
+name: shrew-nn
+
+on:
+  push:
+    paths:
+      - 'crates/shrew-nn/**'
+      - '.github/workflows/shrew-nn.yml'
+  pull_request:
+    paths:
+      - 'crates/shrew-nn/**'
+      - '.github/workflows/shrew-nn.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --package shrew-nn --verbose
+    - name: Run tests
+      run: cargo test --package shrew-nn --verbose

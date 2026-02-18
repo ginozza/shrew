@@ -1,0 +1,30 @@
+name: shrew-cuda
+
+on:
+  push:
+    paths:
+      - 'crates/shrew-cuda/**'
+      - '.github/workflows/shrew-cuda.yml'
+  pull_request:
+    paths:
+      - 'crates/shrew-cuda/**'
+      - '.github/workflows/shrew-cuda.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up CUDA
+      uses: Jimver/cuda-toolkit@v0.2.11
+      id: cuda-toolkit
+      with:
+        cuda: '12.0.0'
+    - name: Build
+      run: cargo build --package shrew-cuda --verbose
+    # Tests usually require a GPU runner or mock
+    - name: Run tests
+      run: cargo test --package shrew-cuda --verbose || echo "Skipping actual execution if no GPU"

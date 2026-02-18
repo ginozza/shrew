@@ -1,0 +1,28 @@
+name: shrew-python
+
+on:
+  push:
+    paths:
+      - 'crates/shrew-python/**'
+      - '.github/workflows/shrew-python.yml'
+  pull_request:
+    paths:
+      - 'crates/shrew-python/**'
+      - '.github/workflows/shrew-python.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Build
+      run: cargo build --package shrew-python --verbose
+    - name: Run tests
+      run: cargo test --package shrew-python --verbose

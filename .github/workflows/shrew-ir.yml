@@ -1,0 +1,24 @@
+name: shrew-ir
+
+on:
+  push:
+    paths:
+      - 'crates/shrew-ir/**'
+      - '.github/workflows/shrew-ir.yml'
+  pull_request:
+    paths:
+      - 'crates/shrew-ir/**'
+      - '.github/workflows/shrew-ir.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --package shrew-ir --verbose
+    - name: Run tests
+      run: cargo test --package shrew-ir --verbose
