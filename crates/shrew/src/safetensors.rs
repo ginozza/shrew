@@ -1,4 +1,6 @@
+// =============================================================================
 // Safetensors — Interoperable tensor serialization (HuggingFace format)
+// =============================================================================
 //
 // The safetensors format stores tensors in a single flat file:
 //
@@ -40,7 +42,9 @@ use shrew_core::backend::Backend;
 use shrew_core::tensor::Tensor;
 use shrew_core::DType;
 
+// ─────────────────────────────────────────────────────────────────────────────
 // DType ↔ safetensors string
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn dtype_to_st(dtype: DType) -> &'static str {
     match dtype {
@@ -81,7 +85,9 @@ fn dtype_elem_size(dtype: DType) -> usize {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Raw bytes extraction / reconstruction
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn tensor_to_bytes<B: Backend>(tensor: &Tensor<B>) -> shrew_core::Result<Vec<u8>> {
     let t = tensor.contiguous()?;
@@ -163,7 +169,9 @@ fn tensor_from_bytes<B: Backend>(
     Tensor::from_f64_slice(&data_f64, shape, dtype, device)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // JSON header builder (no serde dependency)
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Escape a string for JSON (handles \, ", and control characters).
 fn json_escape(s: &str) -> String {
@@ -240,7 +248,9 @@ fn build_header_json(metas: &[TensorMeta], metadata: Option<&HashMap<String, Str
     json
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // JSON header parser (minimal, no serde dependency)
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Parsed tensor entry from safetensors header.
 struct ParsedEntry {
@@ -316,7 +326,9 @@ fn parse_header(json_str: &str) -> shrew_core::Result<Vec<ParsedEntry>> {
     Ok(entries)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Write safetensors
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Write named tensors in safetensors format to a writer.
 pub fn write_safetensors<B: Backend>(
@@ -412,7 +424,9 @@ fn io_err(e: std::io::Error) -> shrew_core::Error {
     shrew_core::Error::msg(format!("IO error: {e}"))
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // High-level file API
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Save named tensors to a `.safetensors` file.
 ///
@@ -455,7 +469,9 @@ pub fn load<B: Backend>(
     read_safetensors(&mut reader, device)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // In-memory API (for testing)
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Serialize named tensors to an in-memory byte vector in safetensors format.
 pub fn to_bytes<B: Backend>(tensors: &[(String, Tensor<B>)]) -> shrew_core::Result<Vec<u8>> {
@@ -473,7 +489,9 @@ pub fn from_bytes<B: Backend>(
     read_safetensors(&mut cursor, device)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Module-level convenience
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Save a module's parameters to a `.safetensors` file using its
 /// `named_parameters()`.
@@ -504,7 +522,9 @@ pub fn load_state_dict<B: Backend>(
     Ok(tensors.into_iter().collect())
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Tests
+// ─────────────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {

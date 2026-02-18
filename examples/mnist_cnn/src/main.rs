@@ -1,4 +1,6 @@
+// =============================================================================
 // MNIST CNN — Convolutional Neural Network for Digit Classification (Shrew)
+// =============================================================================
 //
 // This example trains a CNN on the MNIST handwritten-digit dataset (0–9).
 //
@@ -28,7 +30,9 @@ use shrew_data::{
     DataLoader, DataLoaderConfig, MnistDataset,
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Configuration
+// ─────────────────────────────────────────────────────────────────────────────
 
 struct Config {
     data_dir: Option<String>,
@@ -114,7 +118,9 @@ fn parse_args() -> Config {
     cfg
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // CNN Model
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// A simple CNN for MNIST:
 ///   conv1 → bn1 → relu → pool1
@@ -230,7 +236,9 @@ impl MnistCnn {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Helpers
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Compute argmax-based classification accuracy.
 fn accuracy(logits: &CpuTensor, targets_onehot: &CpuTensor) -> shrew::Result<f64> {
@@ -264,7 +272,9 @@ fn accuracy(logits: &CpuTensor, targets_onehot: &CpuTensor) -> shrew::Result<f64
     Ok(correct as f64 / batch as f64)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Main
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn main() -> shrew::Result<()> {
     let cfg = parse_args();

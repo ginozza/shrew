@@ -1,4 +1,6 @@
+// =============================================================================
 // MNIST Handwritten Digit Classification — Shrew Deep Learning Library
+// =============================================================================
 //
 // This example trains a simple MLP (Multi-Layer Perceptron) on the MNIST
 // dataset of handwritten digits (0–9).
@@ -28,7 +30,9 @@ use shrew_data::{
     DataLoader, DataLoaderConfig, MnistDataset,
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Configuration
+// ─────────────────────────────────────────────────────────────────────────────
 
 struct Config {
     data_dir: Option<String>,
@@ -114,7 +118,9 @@ fn parse_args() -> Config {
     cfg
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Forward pass helper
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Forward pass: Input → Linear(784,128) → ReLU → Linear(128,10)
 ///
@@ -174,7 +180,9 @@ fn accuracy(logits: &CpuTensor, targets_onehot: &CpuTensor) -> shrew::Result<f64
     Ok(correct as f64 / batch as f64)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Main
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn main() -> shrew::Result<()> {
     let cfg = parse_args();

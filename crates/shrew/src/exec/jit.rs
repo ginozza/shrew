@@ -1,4 +1,6 @@
+// =============================================================================
 // JIT Graph Compilation — Compile IR graphs into optimized execution plans
+// =============================================================================
 //
 // The default `Executor` interprets the IR graph on every call:
 //   - Recomputes topological order each time
@@ -48,7 +50,9 @@ use shrew_nn::Module;
 
 use super::engine::{ir_dtype_to_core, RuntimeConfig};
 
+// =============================================================================
 // Instruction — A single pre-compiled operation
+// =============================================================================
 
 /// Specifies which buffer slot an instruction reads from.
 #[derive(Debug, Clone)]
@@ -330,7 +334,9 @@ pub enum LogicalBinInstr {
     Or,
 }
 
+// =============================================================================
 // MemoryPlan — Buffer lifecycle analysis
+// =============================================================================
 
 /// Tracks when each value is first produced and last consumed.
 #[derive(Debug, Clone)]
@@ -363,7 +369,9 @@ pub struct MemoryPlan {
     pub reuse_count: usize,
 }
 
+// =============================================================================
 // CompiledGraph — A fully compiled execution plan
+// =============================================================================
 
 /// The compiled execution plan for a single IR graph.
 ///
@@ -420,7 +428,9 @@ impl fmt::Display for CompileStats {
     }
 }
 
+// =============================================================================
 // Compilation — transform IrGraph → CompiledGraph
+// =============================================================================
 
 /// Compile a single IR graph into an optimized execution plan.
 pub fn compile_graph(
@@ -992,7 +1002,9 @@ fn compile_node(
     }
 }
 
+// =============================================================================
 // JitExecutor — Runs compiled graphs
+// =============================================================================
 
 /// A JIT-compiled executor that runs pre-compiled graph execution plans.
 ///
@@ -1666,7 +1678,9 @@ impl<B: Backend> JitExecutor<B> {
     }
 }
 
+// =============================================================================
 // Helper functions
+// =============================================================================
 
 /// Get a tensor from a buffer slot.
 fn get_slot<B: Backend>(slots: &[Option<Tensor<B>>], idx: usize) -> Result<&Tensor<B>> {
@@ -1878,7 +1892,9 @@ fn compute_fans(shape: &shrew_core::Shape) -> (usize, usize) {
     }
 }
 
+// =============================================================================
 // Convenience: parse → lower → validate → optimize → JIT compile
+// =============================================================================
 
 /// Parse, lower, validate, optimize, and JIT-compile a `.sw` program.
 ///

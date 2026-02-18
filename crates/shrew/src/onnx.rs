@@ -1,4 +1,6 @@
+// =============================================================================
 // ONNX — Import / Export for interoperability
+// =============================================================================
 //
 // ONNX (Open Neural Network Exchange) is the industry standard for
 // exchanging trained models between frameworks (PyTorch, TensorFlow,
@@ -33,7 +35,9 @@ use shrew_core::tensor::Tensor;
 
 use shrew_nn::Module;
 
+// =============================================================================
 // ONNX constants
+// =============================================================================
 
 /// ONNX IR version (we target ONNX IR version 9 / opset 17).
 const ONNX_IR_VERSION: i64 = 9;
@@ -54,7 +58,9 @@ const ONNX_INT32: i32 = 6;
 const ONNX_INT64: i32 = 7;
 const ONNX_UINT32: i32 = 12;
 
+// =============================================================================
 // Minimal protobuf encoder
+// =============================================================================
 
 /// A minimal protobuf wire-format encoder. Supports:
 /// - Varint (field type 0)
@@ -135,7 +141,9 @@ impl PbEncoder {
     }
 }
 
+// =============================================================================
 // Minimal protobuf decoder
+// =============================================================================
 
 /// A minimal protobuf wire-format decoder.
 struct PbDecoder<'a> {
@@ -220,7 +228,9 @@ impl<'a> PbDecoder<'a> {
     }
 }
 
+// =============================================================================
 // ONNX TensorProto
+// =============================================================================
 
 /// Represents an ONNX TensorProto (a named tensor with shape and data).
 #[derive(Debug, Clone)]
@@ -419,7 +429,9 @@ fn onnx_to_dtype(onnx_type: i32) -> Result<DType> {
     }
 }
 
+// =============================================================================
 // ONNX NodeProto (graph operation)
+// =============================================================================
 
 /// An ONNX graph node (operation).
 #[derive(Debug, Clone)]
@@ -507,7 +519,9 @@ fn encode_attribute(name: &str, val: &OnnxAttribute) -> PbEncoder {
     enc
 }
 
+// =============================================================================
 // ONNX ModelProto — top-level export
+// =============================================================================
 
 /// An ONNX model with graph, metadata, and opset information.
 #[derive(Debug, Clone)]
@@ -629,7 +643,9 @@ fn encode_value_info(name: &str, dims: &[i64], data_type: i32) -> PbEncoder {
     vi
 }
 
+// =============================================================================
 // Export API
+// =============================================================================
 
 /// Export a module's weights as an ONNX model file.
 ///
@@ -746,7 +762,9 @@ where
     model.save(path)
 }
 
+// =============================================================================
 // Import API
+// =============================================================================
 
 /// Load tensor weights from an ONNX model file.
 ///
@@ -832,7 +850,9 @@ fn parse_graph_initializers<B: Backend>(
     Ok(result)
 }
 
+// =============================================================================
 // Graph Import — Full ONNX graph parsing
+// =============================================================================
 
 /// A fully parsed ONNX graph: nodes + initializers + I/O metadata.
 #[derive(Debug, Clone)]
@@ -1018,7 +1038,9 @@ pub fn load_onnx_graph_from_bytes(data: &[u8]) -> Result<OnnxGraph> {
     Err(shrew_core::Error::msg("ONNX file contains no graph"))
 }
 
+// =============================================================================
 // Graph Execution — Run an ONNX graph with Shrew tensors
+// =============================================================================
 
 /// Execute an ONNX graph on the given backend.
 ///
@@ -1531,7 +1553,9 @@ fn execute_node<B: Backend>(
     Ok(())
 }
 
+// =============================================================================
 // Tests
+// =============================================================================
 
 #[cfg(test)]
 mod tests {

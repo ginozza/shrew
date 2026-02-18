@@ -1,4 +1,6 @@
+// =============================================================================
 // Trainer — Training loop runner powered by the graph executor
+// =============================================================================
 //
 // Reads the @training block from an IrProgram and runs the training loop:
 //   1. Initialize parameters
@@ -24,7 +26,9 @@ use shrew_optim::{Adam, AdamW, Optimizer, SGD};
 
 use super::engine::{Executor, RuntimeConfig};
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Training result types
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Summary of a full training run.
 #[derive(Debug, Clone)]
@@ -54,7 +58,9 @@ impl std::fmt::Display for TrainResult {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Trainer
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// High-level training loop runner.
 ///
@@ -240,7 +246,9 @@ impl<B: Backend> Trainer<B> {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Convenience functions
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Parse, lower, validate, optimize, and prepare an executor from .sw source.
 pub fn load_program<B: Backend>(

@@ -1,17 +1,23 @@
+// =============================================================================
 // Executor tests — Verifies .sw files can be parsed and executed end-to-end
+// =============================================================================
 
 use std::collections::HashMap;
 
 use shrew::exec::{load_program, load_trainer, Executor, RuntimeConfig};
 use shrew::prelude::*;
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Helper: build executor from .sw source
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn make_executor(src: &str, config: RuntimeConfig) -> Executor<CpuBackend> {
     load_program::<CpuBackend>(src, CpuDevice, config).expect("failed to load program")
 }
 
+// =============================================================================
 // Basic graph execution
+// =============================================================================
 
 #[test]
 fn test_exec_identity_graph() {
@@ -230,7 +236,9 @@ fn test_exec_transpose() {
     assert_eq!(y.dims(), &[3, 2]);
 }
 
+// =============================================================================
 // Parameter initialization
+// =============================================================================
 
 #[test]
 fn test_exec_param_init_zeros() {
@@ -304,7 +312,9 @@ fn test_exec_param_normal_init() {
     assert_eq!(y.dims(), &[4, 4]);
 }
 
+// =============================================================================
 // Embedding execution
+// =============================================================================
 
 #[test]
 fn test_exec_embedding() {
@@ -333,7 +343,9 @@ fn test_exec_embedding() {
     assert!(data.iter().all(|&v| (v - 1.0).abs() < 1e-10));
 }
 
+// =============================================================================
 // LayerNorm execution
+// =============================================================================
 
 #[test]
 fn test_exec_layernorm() {
@@ -371,7 +383,9 @@ fn test_exec_layernorm() {
     assert!(row1_mean.abs() < 1e-6, "row1 mean = {}", row1_mean);
 }
 
+// =============================================================================
 // Chain of operations
+// =============================================================================
 
 #[test]
 fn test_exec_multi_node_chain() {
@@ -405,7 +419,9 @@ fn test_exec_multi_node_chain() {
     assert!(data[3] > 0.98); // sigmoid(4) ≈ 0.98
 }
 
+// =============================================================================
 // Matmul + transpose (like TinyGPT's logits computation)
+// =============================================================================
 
 #[test]
 fn test_exec_matmul_transpose() {
@@ -441,7 +457,9 @@ fn test_exec_matmul_transpose() {
     assert_eq!(data, vec![4.0, 4.0, 4.0, 8.0, 8.0, 8.0]);
 }
 
+// =============================================================================
 // Symbolic dimension resolution
+// =============================================================================
 
 #[test]
 fn test_exec_symbolic_dims() {
@@ -469,7 +487,9 @@ fn test_exec_symbolic_dims() {
     assert_eq!(y.dims(), &[3, 8]);
 }
 
+// =============================================================================
 // Sum reduction
+// =============================================================================
 
 #[test]
 fn test_exec_sum_reduction() {
@@ -501,7 +521,9 @@ fn test_exec_sum_reduction() {
     assert_eq!(data, vec![6.0, 15.0]);
 }
 
+// =============================================================================
 // Mean reduction
+// =============================================================================
 
 #[test]
 fn test_exec_mean_reduction() {
@@ -532,7 +554,9 @@ fn test_exec_mean_reduction() {
     assert_eq!(data, vec![2.5, 25.0]);
 }
 
+// =============================================================================
 // Constant nodes
+// =============================================================================
 
 #[test]
 fn test_exec_constant() {
@@ -558,7 +582,9 @@ fn test_exec_constant() {
     assert_eq!(data, vec![10.0, 20.0, 30.0]);
 }
 
+// =============================================================================
 // Graph not found
+// =============================================================================
 
 #[test]
 fn test_exec_graph_not_found() {
@@ -577,7 +603,9 @@ fn test_exec_graph_not_found() {
     assert!(result.is_err());
 }
 
+// =============================================================================
 // Dropout (eval mode = pass-through)
+// =============================================================================
 
 #[test]
 fn test_exec_dropout_eval() {
@@ -611,7 +639,9 @@ fn test_exec_dropout_eval() {
     assert_eq!(data, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
 }
 
+// =============================================================================
 // Linear layer execution
+// =============================================================================
 
 #[test]
 fn test_exec_linear() {
@@ -645,7 +675,9 @@ fn test_exec_linear() {
     assert_eq!(data, vec![4.0, 4.0, 4.0, 8.0, 8.0, 8.0]);
 }
 
+// =============================================================================
 // Gelu activation
+// =============================================================================
 
 #[test]
 fn test_exec_gelu() {
@@ -675,7 +707,9 @@ fn test_exec_gelu() {
     assert!(data[2] < 0.0);
 }
 
+// =============================================================================
 // Multiple unary activations
+// =============================================================================
 
 #[test]
 fn test_exec_activation_chain() {
@@ -709,7 +743,9 @@ fn test_exec_activation_chain() {
     }
 }
 
+// =============================================================================
 // Full pipeline from .sw source text
+// =============================================================================
 
 #[test]
 fn test_exec_full_pipeline_simple_net() {
@@ -743,7 +779,9 @@ fn test_exec_full_pipeline_simple_net() {
     assert_eq!(y.dims(), &[3, 2]);
 }
 
+// =============================================================================
 // Autograd through executed graph
+// =============================================================================
 
 #[test]
 fn test_exec_backward_through_graph() {
@@ -785,7 +823,9 @@ fn test_exec_backward_through_graph() {
     let _grads = sum_loss.backward().unwrap();
 }
 
+// =============================================================================
 // Trainer creation
+// =============================================================================
 
 #[test]
 fn test_trainer_from_program() {
@@ -816,7 +856,9 @@ fn test_trainer_from_program() {
     assert_eq!(trainer.batch_size, 4);
 }
 
+// =============================================================================
 // Training loop (simple regression)
+// =============================================================================
 
 #[test]
 fn test_trainer_simple_regression() {
@@ -861,7 +903,9 @@ fn test_trainer_simple_regression() {
     );
 }
 
+// =============================================================================
 // RuntimeConfig builder
+// =============================================================================
 
 #[test]
 fn test_runtime_config() {
@@ -877,7 +921,9 @@ fn test_runtime_config() {
     assert_eq!(config.default_dtype, DType::F32);
 }
 
+// =============================================================================
 // End-to-end integration: MLP classifier
+// =============================================================================
 
 /// A small 2-layer MLP that can be parsed, lowered, and executed end-to-end.
 #[test]
@@ -1009,7 +1055,9 @@ fn test_tiny_gpt_parse_and_lower() {
     assert!(!fwd.outputs.is_empty());
 }
 
+// =============================================================================
 // Checkpoint save/load tests
+// =============================================================================
 
 #[test]
 fn test_checkpoint_executor_roundtrip() {
@@ -1116,7 +1164,9 @@ fn test_checkpoint_file_save_load() {
     assert_eq!(o1, o2);
 }
 
+// =============================================================================
 // Mod op test (verifies floor-based modulo)
+// =============================================================================
 
 #[test]
 fn test_exec_mod_op() {
@@ -1158,7 +1208,9 @@ fn test_exec_mod_op() {
     );
 }
 
+// =============================================================================
 // Xavier/Kaiming init tests
+// =============================================================================
 
 #[test]
 fn test_exec_xavier_uniform_init_scale() {

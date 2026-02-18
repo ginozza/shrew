@@ -1,5 +1,5 @@
 [package]
-name = "example-mnist"
+name = "mnist-example"
 publish = false
 version.workspace = true
 edition.workspace = true

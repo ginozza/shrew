@@ -1,4 +1,6 @@
+// =============================================================================
 // Checkpoint — Save and load model parameters
+// =============================================================================
 //
 // Binary checkpoint format (.shrew):
 //
@@ -37,12 +39,16 @@ use shrew_optim::OptimizerState;
 
 use crate::exec::Executor;
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Constants
+// ─────────────────────────────────────────────────────────────────────────────
 
 const MAGIC: &[u8; 4] = b"SHRW";
 const VERSION: u32 = 1;
 
+// ─────────────────────────────────────────────────────────────────────────────
 // DType <-> u8 encoding
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn dtype_to_u8(dtype: DType) -> u8 {
     match dtype {
@@ -69,7 +75,9 @@ fn u8_to_dtype(v: u8) -> shrew_core::Result<DType> {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Raw bytes extraction from tensor (via f64 roundtrip for portability)
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Convert a tensor to raw LE bytes, preserving the original dtype.
 fn tensor_to_bytes<B: Backend>(tensor: &Tensor<B>) -> shrew_core::Result<Vec<u8>> {
@@ -142,7 +150,9 @@ fn tensor_from_bytes<B: Backend>(
     Tensor::<B>::from_f64_slice(&data_f64, shape, dtype, device)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Low-level IO helpers
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn write_u8(w: &mut impl Write, v: u8) -> std::io::Result<()> {
     w.write_all(&[v])
@@ -184,7 +194,9 @@ fn read_bytes(r: &mut impl Read, len: usize) -> std::io::Result<Vec<u8>> {
     Ok(buf)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Write checkpoint
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Write a set of named tensors to a writer in the Shrew checkpoint format.
 pub fn write_checkpoint<B: Backend>(
@@ -272,7 +284,9 @@ fn io_err(e: std::io::Error) -> shrew_core::Error {
     shrew_core::Error::msg(format!("IO error: {e}"))
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // High-level API — save/load named tensors
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Save a list of named tensors to a file.
 ///
@@ -319,7 +333,9 @@ pub fn load_tensors<B: Backend>(
     read_checkpoint(&mut reader, device)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // High-level API — save/load Executor parameters
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Save all parameters from an Executor to a checkpoint file.
 ///
@@ -370,7 +386,9 @@ pub fn load_trainer<B: Backend>(
     load(path, &mut trainer.executor)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // In-memory checkpoint (for testing and transfer)
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Serialize named tensors to an in-memory byte vector.
 pub fn to_bytes<B: Backend>(tensors: &[(String, Tensor<B>)]) -> shrew_core::Result<Vec<u8>> {
@@ -388,7 +406,9 @@ pub fn from_bytes<B: Backend>(
     read_checkpoint(&mut cursor, device)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Training Checkpoint — Full training state (model + optimizer + metadata)
+// ─────────────────────────────────────────────────────────────────────────────
 //
 // Binary training checkpoint format (.shrew v2):
 //
@@ -752,7 +772,9 @@ pub fn read_training_checkpoint<B: Backend>(
     })
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // High-level API — save/load training checkpoints
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Save a complete training checkpoint to a file.
 ///
@@ -822,7 +844,9 @@ pub fn training_from_bytes<B: Backend>(
     read_training_checkpoint(&mut cursor, device)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Tests
+// ─────────────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {

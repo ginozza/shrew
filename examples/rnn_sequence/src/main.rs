@@ -1,4 +1,6 @@
+// =============================================================================
 // RNN Sequence Prediction — Sine Wave Forecasting
+// =============================================================================
 //
 // This example trains a vanilla RNN to predict the next value in a sine wave
 // sequence. It's a classic demonstration of recurrent networks learning

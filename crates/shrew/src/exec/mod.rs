@@ -1,4 +1,6 @@
+// =============================================================================
 // Executor — Runs .sw programs on the Shrew tensor runtime
+// =============================================================================
 //
 // This module bridges the IR pipeline and the tensor runtime. It takes a
 // lowered, validated, optimized IrProgram and executes it:

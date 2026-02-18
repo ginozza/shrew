@@ -1,4 +1,6 @@
+// =============================================================================
 // Char-Level GPT — Character-Level Language Model (Shrew)
+// =============================================================================
 //
 // This example trains a small GPT-style transformer on character-level text.
 // Given a sequence of characters, the model learns to predict the next one.
@@ -32,7 +34,9 @@
 use shrew::nn::{Embedding, Module};
 use shrew::prelude::*;
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Configuration
+// ─────────────────────────────────────────────────────────────────────────────
 
 struct Config {
     /// Path to a text file for training data (None = built-in text)
@@ -198,7 +202,9 @@ fn parse_args() -> Config {
     cfg
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Character Tokenizer
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// A simple character-level tokenizer.
 /// Maps each unique character in the training text to an integer index.
@@ -248,7 +254,9 @@ impl CharTokenizer {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // GPT Model
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// A small GPT-style language model.
 ///
@@ -382,7 +390,9 @@ impl CharGPT {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Data Preparation
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Create training batches from encoded text.
 ///
@@ -448,7 +458,9 @@ fn create_batches(
     Ok(batches)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Text Generation
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Generate text autoregressively from a prompt.
 ///
@@ -527,7 +539,9 @@ fn generate(
     Ok(tokenizer.decode(&context))
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Built-in Training Text
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// A short Shakespeare excerpt for quick demo training.
 const DEFAULT_TEXT: &str = "\
@@ -611,7 +625,9 @@ First Citizen:
 Soft! who comes here?
 ";
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Main
+// ─────────────────────────────────────────────────────────────────────────────
 
 fn main() -> shrew::Result<()> {
     let cfg = parse_args();

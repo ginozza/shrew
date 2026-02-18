@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/ginozza/shrew/actions"><img src="https://github.com/ginozza/shrew/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/ginozza/shrew/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License"></a>
   <a href="https://crates.io/crates/shrew"><img src="https://img.shields.io/crates/v/shrew.svg" alt="Crates.io"></a>
   <img src="https://img.shields.io/badge/rust-1.75%2B-orange.svg" alt="MSRV">
@@ -346,9 +347,9 @@ cargo doc --workspace --no-deps   # Generate documentation
 ```bash
 cargo run -p example-linear-regression
 cargo run -p example-mlp-xor
-cargo run -p example-mnist                    # Requires MNIST data download
-cargo run -p example-mnist-cnn
-cargo run --release -p example-char-gpt       # Char-level GPT on Shakespeare
+cargo run -p mnist-example                    # Requires MNIST data download
+cargo run -p mnist-cnn-example
+cargo run --release -p char-gpt-example       # Char-level GPT on Shakespeare
 cargo run -p example-rnn-sequence
 cargo run --release -p example-bench-ops      # CPU performance benchmarks
 ```

@@ -1,4 +1,6 @@
+// =============================================================================
 // Engine — Core graph execution engine
+// =============================================================================
 //
 // Walks the IrGraph in topological order, dispatching each node to the
 // appropriate tensor operation. Manages parameter initialization and the
@@ -20,7 +22,9 @@ use shrew_nn::{
     cross_entropy_loss, mse_loss, Dropout, Embedding, LayerNorm, Linear, Module, TransformerBlock,
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Runtime configuration
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Runtime configuration for resolving symbolic dimensions and execution mode.
 #[derive(Debug, Clone)]
@@ -63,7 +67,9 @@ impl RuntimeConfig {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Execution result
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// The result of executing a graph.
 #[derive(Debug)]
@@ -86,7 +92,9 @@ impl<B: Backend> ExecResult<B> {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Executor
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Executes IrProgram graphs on the Shrew tensor runtime.
 pub struct Executor<B: Backend> {
@@ -919,7 +927,9 @@ impl<B: Backend> Executor<B> {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Free helpers
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Convert IR DType to core DType.
 pub fn ir_dtype_to_core(dt: IrDType) -> Result<CoreDType> {
