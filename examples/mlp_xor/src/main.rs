@@ -120,14 +120,14 @@ fn main() -> shrew::Result<()> {
             out.add(&b2_exp)?
         };
 
-        //  Compute loss 
+        //  Compute loss
         let loss = mse_loss(&y_pred, &y)?;
         let loss_val = loss.to_scalar_f64()?;
 
-        //  Backward pass 
+        //  Backward pass
         let grads = loss.backward()?;
 
-        //  Optimizer step 
+        //  Optimizer step
         optimizer.step(&grads)?;
 
         // Print progress every 50 epochs

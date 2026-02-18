@@ -1434,7 +1434,6 @@ dependencies = [
  "half",
  "rand 0.8.5",
  "rand_distr",
- "shrew",
  "shrew-core",
  "shrew-nn",
  "shrew-optim",
