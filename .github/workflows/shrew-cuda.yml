@@ -17,7 +17,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up CUDA
       uses: Jimver/cuda-toolkit@v0.2.11
       id: cuda-toolkit
