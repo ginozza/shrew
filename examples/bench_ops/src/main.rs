@@ -28,10 +28,8 @@ fn bench<F: FnMut()>(name: &str, iters: u32, mut f: F) {
 fn main() {
     println!("=== Shrew CPU Performance Benchmark ===\n");
 
-    // -------------------------------------------------------------------
     // Matmul benchmarks (GEMM-accelerated)
-    // -------------------------------------------------------------------
-    println!("--- Matrix Multiplication (gemm) ---");
+    println!(" Matrix Multiplication (gemm) ");
 
     for &sz in &[64usize, 128, 256, 512] {
         let a = T::randn((sz, sz), DType::F32, &DEV).unwrap();
@@ -59,10 +57,8 @@ fn main() {
 
     println!();
 
-    // -------------------------------------------------------------------
     // Elementwise binary ops
-    // -------------------------------------------------------------------
-    println!("--- Binary Ops (add, mul) ---");
+    println!(" Binary Ops (add, mul) ");
 
     for &sz in &[1_000usize, 10_000, 100_000, 1_000_000] {
         let a = T::randn(vec![sz], DType::F32, &DEV).unwrap();
@@ -96,10 +92,8 @@ fn main() {
 
     println!();
 
-    // -------------------------------------------------------------------
     // Unary ops
-    // -------------------------------------------------------------------
-    println!("--- Unary Ops (exp, relu, gelu) ---");
+    println!(" Unary Ops (exp, relu, gelu) ");
 
     for &sz in &[10_000usize, 100_000, 1_000_000] {
         let a = T::randn(vec![sz], DType::F32, &DEV).unwrap();
@@ -124,10 +118,8 @@ fn main() {
 
     println!();
 
-    // -------------------------------------------------------------------
     // End-to-end: Linear layer forward
-    // -------------------------------------------------------------------
-    println!("--- Linear Layer Forward ---");
+    println!(" Linear Layer Forward ");
 
     for &(batch, in_f, out_f) in &[(32, 784, 256), (64, 512, 512), (128, 256, 128)] {
         let x = T::randn((batch, in_f), DType::F32, &DEV).unwrap();

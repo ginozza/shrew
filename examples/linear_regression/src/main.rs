@@ -18,9 +18,9 @@ use shrew::prelude::*;
 fn main() -> shrew::Result<()> {
     let dev = CpuDevice;
 
-    println!("=== Shrew Linear Regression with Autograd ===\n");
+    println!(" Shrew Linear Regression with Autograd \n");
 
-    // --- Step 1: Create synthetic data ---
+    //  Step 1: Create synthetic data 
     // y = 2*x + 1  (true function we want to learn)
     let x_data: Vec<f64> = (0..10).map(|i| i as f64).collect();
     let y_data: Vec<f64> = x_data.iter().map(|&x| 2.0 * x + 1.0).collect();
@@ -31,13 +31,13 @@ fn main() -> shrew::Result<()> {
     println!("Input X shape: {:?}", x.dims());
     println!("Target Y shape: {:?}", y_true.dims());
 
-    // --- Step 2: Initialize trainable parameters ---
+    //  Step 2: Initialize trainable parameters 
     let mut w_val = 0.5_f64;
     let mut b_val = 0.0_f64;
 
     let lr = 0.001_f64;
 
-    // --- Step 3: Training loop with AUTOGRAD ---
+    //  Step 3: Training loop with AUTOGRAD 
     for epoch in 0..200 {
         // Create parameter tensors as variables (enables gradient tracking)
         let w = CpuTensor::full((1, 1), w_val, DType::F64, &dev)?.set_variable();
@@ -54,7 +54,7 @@ fn main() -> shrew::Result<()> {
         let loss = diff.square()?.mean_all()?;
         let loss_val = loss.to_scalar_f64()?;
 
-        // === THE MAGIC: one call computes ALL gradients ===
+        //  THE MAGIC: one call computes ALL gradients 
         let grads = loss.backward()?;
 
         // Autograd gives us grad_w automatically!
@@ -72,7 +72,7 @@ fn main() -> shrew::Result<()> {
             );
         }
 
-        // --- Step 4: Gradient descent update ---
+        //  Step 4: Gradient descent update 
         w_val -= lr * grad_w_val;
         b_val -= lr * grad_b_val;
     }
@@ -82,8 +82,8 @@ fn main() -> shrew::Result<()> {
         w_val, b_val,
     );
 
-    // --- Bonus: Autograd demo with complex expressions ---
-    println!("\n=== Autograd Demo ===");
+    //  Bonus: Autograd demo with complex expressions 
+    println!("\n Autograd Demo ");
 
     let a = CpuTensor::from_f64_slice(&[3.0], (), DType::F64, &dev)?.set_variable();
     let b = CpuTensor::from_f64_slice(&[4.0], (), DType::F64, &dev)?.set_variable();

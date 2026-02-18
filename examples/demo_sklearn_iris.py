@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
-=============================================================================
- Shrew + Scikit-Learn Demo — Iris Classification with .sw Model
-=============================================================================
+ Shrew + Scikit-Learn Demo - Iris Classification with .sw Model
 
 Demonstrates:
   1. Loading a real dataset from scikit-learn (Iris: 150 samples, 4 features, 3 classes)
@@ -23,12 +21,10 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 1. Load & preprocess the Iris dataset
-# ─────────────────────────────────────────────────────────────────────────────
 
 print("=" * 70)
-print("  SHREW + SCIKIT-LEARN DEMO — Iris Classification")
+print("  SHREW + SCIKIT-LEARN DEMO - Iris Classification")
 print("=" * 70)
 
 iris = load_iris()
@@ -50,9 +46,7 @@ print(f"Classes: {list(class_names)}")
 print(f"Train:   {len(X_train)} samples")
 print(f"Test:    {len(X_test)} samples")
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 2. Load the .sw model
-# ─────────────────────────────────────────────────────────────────────────────
 
 print("\n" + "-" * 70)
 print("  Loading .sw model...")
@@ -64,9 +58,7 @@ print(f"Parameters:  {executor.param_count('forward')}")
 print(f"Inputs:      {executor.input_names('forward')}")
 print(f"Outputs:     {executor.output_names('forward')}")
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 3. Convert data to Shrew tensors
-# ─────────────────────────────────────────────────────────────────────────────
 
 n_train = len(X_train)
 n_test  = len(X_test)
@@ -93,9 +85,7 @@ print(f"\nTensor shapes:")
 print(f"  X_train: {X_train_t.shape}   y_train: {y_train_onehot.shape}")
 print(f"  X_test:  {X_test_t.shape}   y_test:  {y_test_onehot.shape}")
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 4. Train the model
-# ─────────────────────────────────────────────────────────────────────────────
 
 print("\n" + "-" * 70)
 print("  Training with Adam optimizer...")
@@ -143,9 +133,7 @@ for epoch in range(1, epochs + 1):
 elapsed = time.perf_counter() - t0
 print(f"\nTraining completed in {elapsed:.2f}s ({epochs} epochs)")
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 5. Evaluate on test set
-# ─────────────────────────────────────────────────────────────────────────────
 
 print("\n" + "-" * 70)
 print("  Evaluation on test set")
@@ -159,7 +147,7 @@ test_logits = test_outputs["out"]
 pred_classes = shrew.argmax_classes(test_logits)
 true_classes = y_test.tolist()
 
-# --- Metrics ---
+# Metrics
 
 acc = shrew.accuracy(pred_classes, true_classes)
 print(f"\n  Accuracy:           {acc:.4f}  ({int(acc * len(true_classes))}/{len(true_classes)} correct)")
@@ -208,13 +196,11 @@ final_loss = loss.to_list()[0]
 ppl = shrew.perplexity(final_loss)
 print(f"\n  Perplexity (from final loss): {ppl:.4f}")
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 6. Summary
-# ─────────────────────────────────────────────────────────────────────────────
 
 print("\n" + "=" * 70)
 print(f"  SUMMARY")
-print(f"    Model:      iris_classifier.sw (4→16→16→3)")
+print(f"    Model:      iris_classifier.sw (4->16->16->3)")
 print(f"    Dataset:    Iris ({n_train} train / {n_test} test)")
 print(f"    Optimizer:  Adam (lr={lr})")
 print(f"    Epochs:     {epochs}")

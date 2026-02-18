@@ -1,6 +1,4 @@
-// =============================================================================
 // MNIST Handwritten Digit Classification — Shrew Deep Learning Library
-// =============================================================================
 //
 // This example trains a simple MLP (Multi-Layer Perceptron) on the MNIST
 // dataset of handwritten digits (0–9).
@@ -30,9 +28,7 @@ use shrew_data::{
     DataLoader, DataLoaderConfig, MnistDataset,
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Configuration
-// ─────────────────────────────────────────────────────────────────────────────
 
 struct Config {
     data_dir: Option<String>,
@@ -118,9 +114,7 @@ fn parse_args() -> Config {
     cfg
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Forward pass helper
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Forward pass: Input → Linear(784,128) → ReLU → Linear(128,10)
 ///
@@ -180,9 +174,7 @@ fn accuracy(logits: &CpuTensor, targets_onehot: &CpuTensor) -> shrew::Result<f64
     Ok(correct as f64 / batch as f64)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Main
-// ─────────────────────────────────────────────────────────────────────────────
 
 fn main() -> shrew::Result<()> {
     let cfg = parse_args();
@@ -191,9 +183,7 @@ fn main() -> shrew::Result<()> {
     println!("=== Shrew — MNIST Handwritten Digit Classification ===");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 1. Load dataset
-    // ─────────────────────────────────────────────────────────────────────
     let (train_ds, test_ds) = match &cfg.data_dir {
         Some(dir) => {
             println!("Loading MNIST from: {dir}");
@@ -223,9 +213,7 @@ fn main() -> shrew::Result<()> {
     };
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 2. Create DataLoaders with transforms
-    // ─────────────────────────────────────────────────────────────────────
     let train_config = DataLoaderConfig::default()
         .batch_size(cfg.batch_size)
         .shuffle(true)
@@ -251,9 +239,7 @@ fn main() -> shrew::Result<()> {
     println!("  Transforms: Normalize(1/255) → OneHotEncode(10)");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 3. Create network layers
-    // ─────────────────────────────────────────────────────────────────────
     let l1 = Linear::<CpuBackend>::new(784, 128, true, DType::F64, &dev)?;
     let l2 = Linear::<CpuBackend>::new(128, 10, true, DType::F64, &dev)?;
 
@@ -278,9 +264,7 @@ fn main() -> shrew::Result<()> {
     println!("  Total parameters: {total_params}");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 4. Set up optimizer
-    // ─────────────────────────────────────────────────────────────────────
     let mut all_params: Vec<CpuTensor> = Vec::new();
     all_params.extend(l1.parameters());
     all_params.extend(l2.parameters());
@@ -306,9 +290,7 @@ fn main() -> shrew::Result<()> {
     println!("Optimizer: Adam (lr={}, beta1=0.9, beta2=0.999)", cfg.lr);
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 5. Training loop
-    // ─────────────────────────────────────────────────────────────────────
     println!("Training for {} epochs...", cfg.epochs);
     println!("{:-<60}", "");
 
@@ -378,9 +360,7 @@ fn main() -> shrew::Result<()> {
     println!("{:-<60}", "");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 6. Evaluate on test set
-    // ─────────────────────────────────────────────────────────────────────
     println!("Evaluating on test set...");
     let test_batches = test_loader.epoch_batches("input", "target")?;
     let mut test_correct = 0usize;
@@ -410,9 +390,7 @@ fn main() -> shrew::Result<()> {
     );
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 7. Show sample predictions
-    // ─────────────────────────────────────────────────────────────────────
     if let Some(batch) = test_batches.first() {
         let x = batch.get("input").unwrap();
         let y = batch.get("target").unwrap();
@@ -443,9 +421,7 @@ fn main() -> shrew::Result<()> {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────
     // 8. Save trained weights
-    // ─────────────────────────────────────────────────────────────────────
     if let Some(ref save_path) = cfg.save_path {
         let params = optimizer.params();
         let named: Vec<(String, CpuTensor)> = vec![

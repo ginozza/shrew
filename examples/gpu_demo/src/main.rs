@@ -20,18 +20,16 @@ type CpuTensor = Tensor<CpuBackend>;
 const CPU: CpuDevice = CpuDevice;
 
 fn main() {
-    println!("╔══════════════════════════════════════════════════════════════╗");
-    println!("║             Shrew — CUDA GPU Backend Demo                   ║");
-    println!("╚══════════════════════════════════════════════════════════════╝\n");
+    println!(" Shrew — CUDA GPU Backend Demo ");
 
-    // ── 1. Create GPU device ────────────────────────────────────────────
+    //  1. Create GPU device 
     println!("1. Initializing GPU...");
     let start = Instant::now();
     let gpu = CudaDevice::new(0).expect("Failed to create CUDA device");
     println!("   Device:          {:?}", gpu);
     println!("   Kernel compile:  {:.2?}\n", start.elapsed());
 
-    // ── 2. Basic tensor creation ────────────────────────────────────────
+    //  2. Basic tensor creation 
     println!("2. Creating tensors on GPU...");
 
     let zeros = GpuTensor::zeros((3, 4), DType::F32, &gpu).unwrap();
@@ -62,7 +60,7 @@ fn main() {
         &vals[..8.min(vals.len())]
     );
 
-    // ── 3. Element-wise operations ──────────────────────────────────────
+    //  3. Element-wise operations 
     println!("3. Element-wise operations...");
 
     let a = GpuTensor::randn((1024,), DType::F32, &gpu).unwrap();
@@ -91,7 +89,7 @@ fn main() {
 
     println!();
 
-    // ── 4. Matrix multiplication (cuBLAS) ───────────────────────────────
+    //  4. Matrix multiplication (cuBLAS) 
     println!("4. Matrix multiplication via cuBLAS...");
 
     for &sz in &[64usize, 128, 256, 512, 1024] {
@@ -120,7 +118,7 @@ fn main() {
     }
     println!();
 
-    // ── 5. Reductions ───────────────────────────────────────────────────
+    //  5. Reductions 
     println!("5. Reductions...");
 
     let big = GpuTensor::randn((1000, 1000), DType::F32, &gpu).unwrap();
@@ -135,7 +133,7 @@ fn main() {
 
     println!();
 
-    // ── 6. CPU vs GPU comparison ────────────────────────────────────────
+    //  6. CPU vs GPU comparison 
     println!("6. CPU vs GPU performance comparison...\n");
     println!(
         "   {:>30}  {:>12}  {:>12}  {:>8}",
@@ -144,7 +142,7 @@ fn main() {
     println!("   {}", "-".repeat(68));
 
     for &sz in &[256usize, 512, 1024] {
-        // --- Matmul ---
+        // Matmul 
         let ca = CpuTensor::randn((sz, sz), DType::F32, &CPU).unwrap();
         let cb = CpuTensor::randn((sz, sz), DType::F32, &CPU).unwrap();
         let ga = GpuTensor::randn((sz, sz), DType::F32, &gpu).unwrap();
@@ -185,7 +183,7 @@ fn main() {
     }
 
     for &sz in &[100_000usize, 1_000_000, 10_000_000] {
-        // --- Add ---
+        // Add
         let ca = CpuTensor::randn(vec![sz], DType::F32, &CPU).unwrap();
         let cb = CpuTensor::randn(vec![sz], DType::F32, &CPU).unwrap();
         let ga = GpuTensor::randn(vec![sz], DType::F32, &gpu).unwrap();
@@ -226,7 +224,7 @@ fn main() {
 
     println!();
 
-    // ── 7. Memory pool stats ────────────────────────────────────────────
+    //  7. Memory pool stats 
     println!("7. Memory pool statistics...");
     let stats = gpu.pool_stats();
     println!(

@@ -1,6 +1,4 @@
-// =============================================================================
 // RNN Sequence Prediction — Sine Wave Forecasting
-// =============================================================================
 //
 // This example trains a vanilla RNN to predict the next value in a sine wave
 // sequence. It's a classic demonstration of recurrent networks learning
@@ -31,7 +29,7 @@ fn main() -> shrew::Result<()> {
     let dev = CpuDevice;
     let dtype = DType::F64;
 
-    println!("=== Shrew — RNN Sine Wave Prediction ===");
+    println!("Shrew — RNN Sine Wave Prediction");
     println!();
     println!(
         "Architecture: RNN(1→{}) → Linear({}→1)",
@@ -40,9 +38,7 @@ fn main() -> shrew::Result<()> {
     println!("Sequence length: {}, Samples: {}", SEQ_LEN, NUM_SAMPLES);
     println!();
 
-    // =========================================================================
     // 1. Generate synthetic sine-wave data
-    // =========================================================================
     //
     // We sample points from sin(x) at regular intervals. Each training sample
     // is a window of SEQ_LEN consecutive values → next value prediction.
@@ -68,9 +64,7 @@ fn main() -> shrew::Result<()> {
     println!("Target shape: {:?}", y.dims());
     println!();
 
-    // =========================================================================
     // 2. Create the model: RNN + Linear readout
-    // =========================================================================
 
     let rnn = RNN::new(1, HIDDEN_SIZE, true, dtype, &dev)?;
 
@@ -88,15 +82,11 @@ fn main() -> shrew::Result<()> {
     println!("  Total: {} parameters", total_params);
     println!();
 
-    // =========================================================================
     // 3. Create optimizer
-    // =========================================================================
 
     let mut optimizer: Adam<CpuBackend> = Adam::new(params, LR);
 
-    // =========================================================================
     // 4. Training loop
-    // =========================================================================
 
     println!("Training for {} epochs...", EPOCHS);
     println!("{:>5}  {:>12}", "Epoch", "MSE Loss");
@@ -130,9 +120,7 @@ fn main() -> shrew::Result<()> {
         }
     }
 
-    // =========================================================================
     // 5. Evaluation — show some predictions
-    // =========================================================================
 
     println!();
     println!("Sample predictions (last 5 training samples):");

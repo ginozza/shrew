@@ -23,9 +23,7 @@ fn main() -> shrew::Result<()> {
     println!("=== Shrew — MLP XOR Example ===");
     println!();
 
-    // -------------------------------------------------------------------------
     // 1. Define the training data
-    // -------------------------------------------------------------------------
     // XOR truth table:
     //   (0,0) → 0
     //   (0,1) → 1
@@ -45,9 +43,7 @@ fn main() -> shrew::Result<()> {
     println!("  (1,1) → 0");
     println!();
 
-    // -------------------------------------------------------------------------
     // 2. Create the network layers
-    // -------------------------------------------------------------------------
     // We use two linear layers with a ReLU activation in between.
     // The hidden layer has 16 neurons — more than enough for XOR.
 
@@ -79,9 +75,7 @@ fn main() -> shrew::Result<()> {
     println!("  Total parameters: {}", total_params);
     println!();
 
-    // -------------------------------------------------------------------------
     // 3. Set up the optimizer
-    // -------------------------------------------------------------------------
     let mut all_params: Vec<CpuTensor> = Vec::new();
     all_params.extend(l1.parameters());
     all_params.extend(l2.parameters());
@@ -91,16 +85,14 @@ fn main() -> shrew::Result<()> {
     println!("Optimizer: Adam (lr=0.01, β1=0.9, β2=0.999)");
     println!();
 
-    // -------------------------------------------------------------------------
     // 4. Training loop
-    // -------------------------------------------------------------------------
     println!("Training for 500 epochs...");
     println!("{:-<50}", "");
 
     let epochs = 500;
 
     for epoch in 0..epochs {
-        // --- Forward pass ---
+        //  Forward pass
         // Layer 1: h = ReLU(x @ W1^T + b1)
         let h = {
             let w1 = &optimizer.params()[0]; // weight [16, 2]
@@ -128,14 +120,14 @@ fn main() -> shrew::Result<()> {
             out.add(&b2_exp)?
         };
 
-        // --- Compute loss ---
+        //  Compute loss 
         let loss = mse_loss(&y_pred, &y)?;
         let loss_val = loss.to_scalar_f64()?;
 
-        // --- Backward pass ---
+        //  Backward pass 
         let grads = loss.backward()?;
 
-        // --- Optimizer step ---
+        //  Optimizer step 
         optimizer.step(&grads)?;
 
         // Print progress every 50 epochs
@@ -147,9 +139,7 @@ fn main() -> shrew::Result<()> {
     println!("{:-<50}", "");
     println!();
 
-    // -------------------------------------------------------------------------
     // 5. Evaluate the trained model
-    // -------------------------------------------------------------------------
     println!("Predictions after training:");
 
     // Forward pass with final parameters

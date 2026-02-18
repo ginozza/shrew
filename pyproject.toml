@@ -26,5 +26,5 @@ Changelog = "https://github.com/ginozza/shrew/blob/main/CHANGELOG.md"
 
 [tool.maturin]
 manifest-path = "crates/shrew-python/Cargo.toml"
-python-source = "python"
+
 features = []

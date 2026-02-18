@@ -1,6 +1,4 @@
-// =============================================================================
 // Char-Level GPT — Character-Level Language Model (Shrew)
-// =============================================================================
 //
 // This example trains a small GPT-style transformer on character-level text.
 // Given a sequence of characters, the model learns to predict the next one.
@@ -34,9 +32,7 @@
 use shrew::nn::{Embedding, Module};
 use shrew::prelude::*;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Configuration
-// ─────────────────────────────────────────────────────────────────────────────
 
 struct Config {
     /// Path to a text file for training data (None = built-in text)
@@ -202,9 +198,7 @@ fn parse_args() -> Config {
     cfg
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Character Tokenizer
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// A simple character-level tokenizer.
 /// Maps each unique character in the training text to an integer index.
@@ -254,9 +248,7 @@ impl CharTokenizer {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // GPT Model
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// A small GPT-style language model.
 ///
@@ -390,9 +382,7 @@ impl CharGPT {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Data Preparation
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Create training batches from encoded text.
 ///
@@ -458,9 +448,7 @@ fn create_batches(
     Ok(batches)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Text Generation
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Generate text autoregressively from a prompt.
 ///
@@ -539,9 +527,7 @@ fn generate(
     Ok(tokenizer.decode(&context))
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Built-in Training Text
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// A short Shakespeare excerpt for quick demo training.
 const DEFAULT_TEXT: &str = "\
@@ -625,9 +611,7 @@ First Citizen:
 Soft! who comes here?
 ";
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Main
-// ─────────────────────────────────────────────────────────────────────────────
 
 fn main() -> shrew::Result<()> {
     let cfg = parse_args();
@@ -636,9 +620,7 @@ fn main() -> shrew::Result<()> {
     println!("=== Shrew — Char-Level GPT ===");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 1. Load text data
-    // ─────────────────────────────────────────────────────────────────────
     let text = match &cfg.text_file {
         Some(path) => {
             println!("Loading text from: {path}");
@@ -655,9 +637,7 @@ fn main() -> shrew::Result<()> {
         }
     };
 
-    // ─────────────────────────────────────────────────────────────────────
     // 2. Build tokenizer and encode text
-    // ─────────────────────────────────────────────────────────────────────
     let tokenizer = CharTokenizer::from_text(&text);
     let encoded = tokenizer.encode(&text);
     let vocab_size = tokenizer.vocab_size();
@@ -670,9 +650,7 @@ fn main() -> shrew::Result<()> {
     );
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 3. Create training batches
-    // ─────────────────────────────────────────────────────────────────────
     let batches = create_batches(&encoded, cfg.seq_len, cfg.batch_size, vocab_size)?;
     let num_batches = batches.len();
     let total_steps = cfg.epochs * num_batches;
@@ -684,9 +662,7 @@ fn main() -> shrew::Result<()> {
     println!("  Total training steps: {}", total_steps);
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 4. Build model
-    // ─────────────────────────────────────────────────────────────────────
     let model = CharGPT::new(
         vocab_size,
         cfg.d_model,
@@ -707,9 +683,7 @@ fn main() -> shrew::Result<()> {
     println!("  Total parameters: {}", model.total_params());
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 5. Set up optimizer and scheduler
-    // ─────────────────────────────────────────────────────────────────────
     let params = model.parameters();
     let mut optimizer = AdamW::<CpuBackend>::new(params, cfg.lr, 0.01);
     let mut scheduler =
@@ -738,9 +712,7 @@ fn main() -> shrew::Result<()> {
     println!("Gradient clipping: max_norm={}", cfg.max_grad_norm);
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 6. Training loop
-    // ─────────────────────────────────────────────────────────────────────
     println!("Training for {} epochs...", cfg.epochs);
     println!("{:-<70}", "");
 
@@ -822,9 +794,7 @@ fn main() -> shrew::Result<()> {
     println!("{:-<70}", "");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 7. Save checkpoint
-    // ─────────────────────────────────────────────────────────────────────
     if let Some(ref save_path) = cfg.save_path {
         let named = model.named_parameters();
         shrew::checkpoint::save_tensors(save_path, &named)?;
@@ -832,9 +802,7 @@ fn main() -> shrew::Result<()> {
         println!();
     }
 
-    // ─────────────────────────────────────────────────────────────────────
     // 8. Generate text
-    // ─────────────────────────────────────────────────────────────────────
     if cfg.generate > 0 {
         let prompt = if cfg.prompt.is_empty() {
             text[..text.len().min(10)].to_string()

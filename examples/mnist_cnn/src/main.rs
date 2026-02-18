@@ -1,6 +1,4 @@
-// =============================================================================
 // MNIST CNN — Convolutional Neural Network for Digit Classification (Shrew)
-// =============================================================================
 //
 // This example trains a CNN on the MNIST handwritten-digit dataset (0–9).
 //
@@ -30,9 +28,7 @@ use shrew_data::{
     DataLoader, DataLoaderConfig, MnistDataset,
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Configuration
-// ─────────────────────────────────────────────────────────────────────────────
 
 struct Config {
     data_dir: Option<String>,
@@ -118,9 +114,7 @@ fn parse_args() -> Config {
     cfg
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // CNN Model
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// A simple CNN for MNIST:
 ///   conv1 → bn1 → relu → pool1
@@ -236,9 +230,7 @@ impl MnistCnn {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Helpers
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Compute argmax-based classification accuracy.
 fn accuracy(logits: &CpuTensor, targets_onehot: &CpuTensor) -> shrew::Result<f64> {
@@ -272,9 +264,7 @@ fn accuracy(logits: &CpuTensor, targets_onehot: &CpuTensor) -> shrew::Result<f64
     Ok(correct as f64 / batch as f64)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Main
-// ─────────────────────────────────────────────────────────────────────────────
 
 fn main() -> shrew::Result<()> {
     let cfg = parse_args();
@@ -283,9 +273,7 @@ fn main() -> shrew::Result<()> {
     println!("=== Shrew — MNIST CNN Digit Classification ===");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 1. Load dataset
-    // ─────────────────────────────────────────────────────────────────────
     let (train_ds, test_ds) = match &cfg.data_dir {
         Some(dir) => {
             println!("Loading MNIST from: {dir}");
@@ -315,10 +303,8 @@ fn main() -> shrew::Result<()> {
     };
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 2. Create DataLoaders with transforms
     //    Key difference from MLP: we reshape [784] → [1, 28, 28] for CNN
-    // ─────────────────────────────────────────────────────────────────────
     let train_config = DataLoaderConfig::default()
         .batch_size(cfg.batch_size)
         .shuffle(true)
@@ -346,9 +332,7 @@ fn main() -> shrew::Result<()> {
     println!("  Transforms: Normalize(1/255) → Reshape([1,28,28]) → OneHotEncode(10)");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 3. Build the CNN model
-    // ─────────────────────────────────────────────────────────────────────
     let model = MnistCnn::new(&dev)?;
 
     println!("Architecture:");
@@ -358,9 +342,7 @@ fn main() -> shrew::Result<()> {
     println!("  Total parameters: {}", model.total_params());
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 4. Set up optimizer
-    // ─────────────────────────────────────────────────────────────────────
     let all_params = model.parameters();
     let mut optimizer = Adam::<CpuBackend>::new(all_params, cfg.lr);
 
@@ -381,9 +363,7 @@ fn main() -> shrew::Result<()> {
     println!("Optimizer: Adam (lr={})", cfg.lr);
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 5. Training loop
-    // ─────────────────────────────────────────────────────────────────────
     println!("Training for {} epochs...", cfg.epochs);
     println!("{:-<65}", "");
 
@@ -445,9 +425,7 @@ fn main() -> shrew::Result<()> {
     println!("{:-<65}", "");
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 6. Evaluate on test set (eval mode — BatchNorm uses running stats)
-    // ─────────────────────────────────────────────────────────────────────
     println!("Evaluating on test set...");
     model.eval();
     let test_batches = test_loader.epoch_batches("input", "target")?;
@@ -478,9 +456,7 @@ fn main() -> shrew::Result<()> {
     );
     println!();
 
-    // ─────────────────────────────────────────────────────────────────────
     // 7. Show sample predictions
-    // ─────────────────────────────────────────────────────────────────────
     if let Some(batch) = test_batches.first() {
         let x = batch.get("input").unwrap();
         let y = batch.get("target").unwrap();
@@ -511,9 +487,7 @@ fn main() -> shrew::Result<()> {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────
     // 8. Save trained weights
-    // ─────────────────────────────────────────────────────────────────────
     if let Some(ref save_path) = cfg.save_path {
         let named = model.named_parameters();
         shrew::checkpoint::save_tensors(save_path, &named)?;
