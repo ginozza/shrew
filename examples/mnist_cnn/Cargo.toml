@@ -1,0 +1,18 @@
+[package]
+name = "example-mnist-cnn"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "mnist_cnn"
+path = "src/main.rs"
+
+[dependencies]
+shrew.workspace = true
+shrew-core.workspace = true
+shrew-cpu.workspace = true
+shrew-nn.workspace = true
+shrew-optim.workspace = true
+shrew-data.workspace = true

@@ -1,0 +1,11 @@
+[package]
+name = "example-bench-ops"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shrew.workspace = true
+shrew-core.workspace = true
+shrew-cpu.workspace = true

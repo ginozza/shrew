@@ -1,0 +1,12 @@
+[package]
+name = "example-gpu-demo"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shrew = { workspace = true, features = ["cuda"] }
+shrew-core.workspace = true
+shrew-cpu.workspace = true
+shrew-cuda.workspace = true

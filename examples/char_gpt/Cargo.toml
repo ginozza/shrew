@@ -1,0 +1,17 @@
+[package]
+name = "example-char-gpt"
+publish = false
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "char_gpt"
+path = "src/main.rs"
+
+[dependencies]
+shrew.workspace = true
+shrew-core.workspace = true
+shrew-cpu.workspace = true
+shrew-nn.workspace = true
+shrew-optim.workspace = true
