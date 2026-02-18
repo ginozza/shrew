@@ -1,0 +1,14 @@
+[book]
+title = "The Shrew Book"
+authors = ["The Shrew Authors"]
+description = "Documentation for the Shrew declarative tensor system"
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+
+[output.html]
+additional-css = ["theme/custom.css"]
+default-theme = "light"
+preferred-dark-theme = "light"
