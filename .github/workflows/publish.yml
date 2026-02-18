@@ -8,9 +8,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # ─────────────────────────────────────────────────────────────
   # Publish Rust crates to crates.io (in dependency order)
-  # ─────────────────────────────────────────────────────────────
   publish-crates:
     name: Publish to crates.io
     runs-on: ubuntu-latest
@@ -50,9 +48,7 @@ jobs:
       - name: Publish shrew-cli
         run: cargo publish -p shrew-cli --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
-  # ─────────────────────────────────────────────────────────────
   # Publish Python wheels to PyPI
-  # ─────────────────────────────────────────────────────────────
   publish-pypi:
     name: Build Python wheels (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
@@ -100,9 +96,7 @@ jobs:
         with:
           packages-dir: dist/
 
-  # ─────────────────────────────────────────────────────────────
   # Create GitHub Release
-  # ─────────────────────────────────────────────────────────────
   github-release:
     name: GitHub Release
     needs: [publish-crates, upload-pypi]
