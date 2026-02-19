@@ -216,24 +216,45 @@ This installs the `shrew` binary with commands: `dump`, `validate`, `bench`, `in
 
 ### Python
 
+**Installation**:
+
 ```bash
 pip install shrew-python
 ```
 
-Or build from source:
+**Build from source** (requires [maturin](https://github.com/PyO3/maturin)):
 
 ```bash
-git clone https://github.com/ginozza/shrew
-cd shrew
+# Install maturin
 pip install maturin
-maturin develop --release
+
+# Build and install into current environment (from project root)
+maturin develop --manifest-path crates/shrew-python/Cargo.toml --release
 ```
+
+**Running Examples**:
+
+The `examples/` directory contains Python scripts that demonstrate Shrew's capabilities, including the "Max Shrew, Min Python" pattern.
+
+```bash
+# Wine Classification (GPU-accelerated if available)
+python examples/demo_wine_shrew.py
+
+# Iris Classification
+python examples/demo_sklearn_iris.py
+```
+
+**Basic Usage**:
 
 ```python
 import shrew_python as shrew
 
+# Create a tensor
 t = shrew.tensor([1.0, 2.0, 3.0])
 print(t)
+
+# Load a .sw model
+executor = shrew.Executor.load("examples/wine_classifier.sw")
 ```
 
 ### From Source (full workspace)
