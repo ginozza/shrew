@@ -307,8 +307,6 @@ fn test_jit_linear_with_params() {
     assert_close(&out.to_f64_vec().unwrap(), &[0.0, 0.0], 1e-10);
 }
 
-
-
 // Repeated execution (should produce same results)
 
 #[test]

@@ -119,10 +119,10 @@ fn parse_args() -> Config {
 /// Forward pass: Input → Linear(784,128) → ReLU → Linear(128,10)
 ///
 /// params layout:
-///   [0] = w1  [128, 784]
-///   [1] = b1  [1, 128]
-///   [2] = w2  [10, 128]
-///   [3] = b2  [1, 10]
+///   \[0\] = w1  \[128, 784\]
+///   \[1\] = b1  \[1, 128\]
+///   \[2\] = w2  \[10, 128\]
+///   \[3\] = b2  \[1, 10\]
 fn forward(x: &CpuTensor, params: &[CpuTensor]) -> shrew::Result<CpuTensor> {
     // Layer 1: hidden = ReLU(x @ W1^T + b1)
     let w1 = &params[0];

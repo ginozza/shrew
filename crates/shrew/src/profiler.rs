@@ -62,7 +62,7 @@ impl Profiler {
         now
     }
 
-    /// End an event started with [`start_event`]. Records elapsed time.
+    /// End an event started with [`Profiler::start_event`]. Records elapsed time.
     pub fn end_event(&mut self, start: Instant, name: &str, category: &str) {
         let elapsed = start.elapsed();
         self.pending.remove(name);
@@ -248,7 +248,7 @@ fn truncate_str(s: &str, max: usize) -> String {
 
 /// Tracks tensor memory allocations for profiling.
 ///
-/// Call [`alloc`] when a tensor is created and [`dealloc`] when freed.
+/// Call [`MemoryTracker::alloc`] when a tensor is created and [`MemoryTracker::dealloc`] when freed.
 ///
 /// # Example
 /// ```
