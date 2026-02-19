@@ -71,13 +71,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: shrew
+            artifact_name: shrew-cli
             asset_name: shrew-linux-amd64
           - os: windows-latest
-            artifact_name: shrew.exe
+            artifact_name: shrew-cli.exe
             asset_name: shrew-windows-amd64.exe
           - os: macos-latest
-            artifact_name: shrew
+            artifact_name: shrew-cli
             asset_name: shrew-macos-amd64
     steps:
       - uses: actions/checkout@v4
