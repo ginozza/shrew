@@ -5,9 +5,9 @@
 <p align="center">
   <a href="https://github.com/ginozza/shrew/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ginozza/shrew/ci.yml?branch=master&label=CI" alt="CI"></a>
   <a href="https://github.com/ginozza/shrew/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License"></a>
-  <a href="https://crates.io/crates/shrew"><img src="https://img.shields.io/crates/v/shrew.svg" alt="Crates.io"></a>
-  <a href="https://pypi.org/project/shrew-python/"><img src="https://img.shields.io/pypi/v/shrew-python.svg" alt="PyPI"></a>
-  <img src="https://img.shields.io/badge/rust-1.75%2B-orange.svg" alt="MSRV">
+  <a href="https://crates.io/crates/shrew"><img src="https://img.shields.io/crates/v/shrew.svg?color=fc8d62&logo=rust" alt="Crates.io"></a>
+  <a href="https://pypi.org/project/shrew-python/"><img src="https://img.shields.io/pypi/v/shrew-python.svg?color=3775A9&logo=python&logoColor=white" alt="PyPI"></a>
+  <img src="https://img.shields.io/badge/rust-1.75%2B-000000.svg?logo=rust&logoColor=white" alt="MSRV">
 </p>
 
 ---
