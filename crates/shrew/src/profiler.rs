@@ -804,7 +804,7 @@ impl Default for Stopwatch {
 mod tests {
     use super::*;
     use shrew_cpu::{CpuBackend, CpuDevice};
-    use shrew_nn::{Linear, Module};
+    use shrew_nn::Linear;
     use std::sync::{Arc, Mutex};
     use std::thread;
 

@@ -387,7 +387,7 @@ impl CharGPT {
 /// Create training batches from encoded text.
 ///
 /// Returns (inputs, targets) where each is [batch_size, seq_len] as f64.
-/// For each position, target[i] = input[i+1] (next-character prediction).
+/// For each position, `target[i] = input[i+1]` (next-character prediction).
 fn create_batches(
     data: &[usize],
     seq_len: usize,

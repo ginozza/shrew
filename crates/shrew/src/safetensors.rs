@@ -701,7 +701,7 @@ mod tests {
 
     #[test]
     fn test_save_module_linear() {
-        use shrew_nn::{Linear, Module};
+        use shrew_nn::Linear;
 
         let dev = CpuDevice;
         let linear = Linear::<CpuBackend>::new(3, 2, true, DType::F32, &dev).unwrap();

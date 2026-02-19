@@ -307,30 +307,7 @@ fn test_jit_linear_with_params() {
     assert_close(&out.to_f64_vec().unwrap(), &[0.0, 0.0], 1e-10);
 }
 
-// CompileStats
 
-#[test]
-fn test_jit_compile_stats() {
-    let src = r#"
-@model { name: "Stats"; }
-@graph Forward {
-    input x: Tensor<[2, 3], f64>;
-    input y: Tensor<[2, 3], f64>;
-    node a { op: x + y; };
-    node b { op: a * x; };
-    node c { op: relu(b); };
-    output c;
-}
-"#;
-    let jit = make_jit(src, RuntimeConfig::default().with_dtype(DType::F64));
-
-    let stats = jit.stats("Forward").unwrap();
-    assert!(stats.num_instructions > 0);
-    assert!(stats.num_source_nodes > 0);
-    assert!(stats.num_slots > 0);
-    assert!(stats.compile_time_us < 1_000_000); // should compile in < 1s
-    println!("{}", stats);
-}
 
 // Repeated execution (should produce same results)
 

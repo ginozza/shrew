@@ -3381,7 +3381,7 @@ fn test_frozen_params_optimizer_skips() -> shrew::Result<()> {
     // w1 was variable → updated: 1.0 - 0.1*1.0 = 0.9
     let v1 = opt.params()[0].to_scalar_f64()?;
     // w2 was frozen → should remain at 5.0 (optimizer skips non-variables)
-    let v2 = opt.params()[1].to_scalar_f64()?;
+    let _v2 = opt.params()[1].to_scalar_f64()?;
     assert!(approx_eq(v1, 0.9, 1e-10), "w1 should be updated: {}", v1);
     // Note: current SGD still updates even non-variables if grads exist.
     // This test documents that freeze() correctly marks is_variable=false.
@@ -3619,7 +3619,7 @@ fn test_elu() -> shrew::Result<()> {
     let y = Module::<CpuBackend>::forward(&act, &x)?;
     let data = y.to_f64_vec()?;
     // ELU(-1) = 1.0 * (exp(-1) - 1) ≈ -0.6321
-    assert!(approx_eq(data[0], ((-1.0f64).exp() - 1.0), 1e-5));
+    assert!(approx_eq(data[0], (-1.0f64).exp() - 1.0, 1e-5));
     assert!(approx_eq(data[1], 0.0, 1e-10));
     assert!(approx_eq(data[2], 1.0, 1e-10));
     Ok(())
