@@ -9,6 +9,7 @@
 @model {
     name: "IrisClassifier";
     version: "1.0";
+    author: "ginozza";
 }
 
 @graph forward {

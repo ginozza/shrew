@@ -10,7 +10,7 @@
 @model {
     name: "TinyGPT";
     version: "0.1.0";
-    author: "Shrew Contributors";
+    author: "ginozza";
 }
 
 // Hyperparameters and constants
