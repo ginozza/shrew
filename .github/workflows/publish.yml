@@ -11,9 +11,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # ─────────────────────────────────────────────────────────────
   # Publish Rust crates to crates.io (in dependency order)
-  # ─────────────────────────────────────────────────────────────
   publish-crates:
     name: Publish to crates.io
     runs-on: ubuntu-latest
@@ -61,9 +59,7 @@ jobs:
       - name: Publish shrew-cli
         run: cargo publish -p shrew-cli --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
 
-  # ─────────────────────────────────────────────────────────────
   # Build cross-platform CLI binaries
-  # ─────────────────────────────────────────────────────────────
   build-binaries:
     name: Build CLI (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -111,9 +107,7 @@ jobs:
             *.tar.gz
             *.zip
 
-  # ─────────────────────────────────────────────────────────────
   # Create GitHub Release with CLI binaries
-  # ─────────────────────────────────────────────────────────────
   github-release:
     name: GitHub Release
     needs: [publish-crates, build-binaries]
