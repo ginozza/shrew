@@ -3,7 +3,7 @@
 // A simple 2-layer MLP that learns the XOR function:
 //   [0,0] → 0, [0,1] → 1, [1,0] → 1, [1,1] → 0
 //
-// Run with:  cargo run -p shrew-cli -- run examples/demo_mlp.sw --verbose
+// Bench:     cargo run -p shrew-cli -- bench examples/demo_mlp.sw --verbose
 // Inspect:   cargo run -p shrew-cli -- info examples/demo_mlp.sw
 // Validate:  cargo run -p shrew-cli -- validate examples/demo_mlp.sw
 
