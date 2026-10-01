@@ -1,0 +1,31 @@
+name: shrew-c
+
+on:
+  push:
+    paths:
+      - 'crates/shrew-c/**'
+      - '.github/workflows/shrew-c.yml'
+  pull_request:
+    paths:
+      - 'crates/shrew-c/**'
+      - '.github/workflows/shrew-c.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Build
+      run: cargo build --package shrew-c --verbose
+    - name: Run tests
+      run: cargo test --package shrew-c --verbose

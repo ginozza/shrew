@@ -461,7 +461,50 @@ impl<B: Backend> QuantizedLinear<B> {
 
 impl<B: Backend> Module<B> for QuantizedLinear<B> {
     fn forward(&self, x: &Tensor<B>) -> Result<Tensor<B>> {
-        // Dequantize weight from INT8/INT4 → FP32 on-the-fly
+        // Fast path: if INT8 symmetric and 2D input,
+        // use zero-weight-allocation streaming accumulation!
+        if self.weight_q.config.bits == QuantBits::Int8
+            && self.weight_q.config.mode == QuantMode::Symmetric
+            && x.rank() == 2
+            && x.dims()[1] == self.in_features
+        {
+            let x_data = x.to_f64_vec()?;
+            let m = x.dims()[0];
+            let k = self.in_features;
+            let n = self.out_features;
+            let mut out = vec![0.0f64; m * n];
+
+            let scales = &self.weight_q.scales;
+            let per_channel = self.weight_q.config.granularity == QuantGranularity::PerChannel;
+            let default_scale = scales.first().copied().unwrap_or(1.0);
+
+            let bias_vec = match &self.bias {
+                Some(b) => Some(b.to_f64_vec()?),
+                None => None,
+            };
+
+            use rayon::prelude::*;
+            out.par_chunks_mut(n).enumerate().for_each(|(row_idx, out_row)| {
+                let x_row = &x_data[row_idx * k..(row_idx + 1) * k];
+                for o in 0..n {
+                    let w_row = &self.weight_q.data[o * k..(o + 1) * k];
+                    let mut dot = 0.0f64;
+                    for i in 0..k {
+                        dot += x_row[i] * (w_row[i] as f64);
+                    }
+                    let scale = if per_channel { scales[o] } else { default_scale };
+                    let mut val = dot * scale;
+                    if let Some(ref b) = bias_vec {
+                        val += b[o];
+                    }
+                    out_row[o] = val;
+                }
+            });
+
+            return Tensor::<B>::from_f64_slice(&out, (m, n), x.dtype(), x.device());
+        }
+
+        // General fallback: dequantize on-the-fly and GEMM
         let weight = dequantize_tensor::<B>(&self.weight_q, &self.device)?;
 
         // x @ weight^T + bias
