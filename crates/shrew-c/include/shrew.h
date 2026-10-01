@@ -107,6 +107,8 @@ SHREW_API shrew_tensor_t* shrew_executor_run_single(
     const char* input_name,
     const shrew_tensor_t* input
 );
+SHREW_API int shrew_executor_train(shrew_executor_t* exec, double* out_final_loss);
+SHREW_API int shrew_train_file(const char* sw_path, shrew_dtype_t dtype, double* out_final_loss);
 SHREW_API void shrew_executor_free(shrew_executor_t* exec);
 
 // --- Hardware & Diagnostics ---

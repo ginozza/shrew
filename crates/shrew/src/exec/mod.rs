@@ -30,4 +30,4 @@ pub use jit::{
     compile_graph, load_jit, CompileStats, CompiledGraph, Instruction, JitExecutor, JitResult,
     MemoryPlan,
 };
-pub use train::{load_program, load_trainer, EpochLog, TrainResult, Trainer};
+pub use train::{load_program, load_trainer, train_file, EpochLog, TrainResult, Trainer};

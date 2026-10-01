@@ -21,6 +21,7 @@ use shrew_core::tensor::Tensor;
 
 use shrew_ir::graph::IrProgram;
 
+use shrew_data::dataset::Dataset;
 use shrew_nn::{cross_entropy_loss, mse_loss};
 use shrew_optim::{Adam, AdamW, Optimizer, SGD};
 
@@ -244,6 +245,114 @@ impl<B: Backend> Trainer<B> {
     pub fn epochs(&self) -> usize {
         self.epochs
     }
+
+    /// Train using the dataset configuration specified in the @training block.
+    pub fn train_auto(&mut self) -> Result<TrainResult> {
+        let training = self
+            .executor
+            .program()
+            .training
+            .as_ref()
+            .ok_or_else(|| shrew_core::Error::msg("No @training configuration found in program"))?;
+
+        let dataset_cfg = training.dataset.as_ref().ok_or_else(|| {
+            shrew_core::Error::msg(
+                "No 'dataset' specified in @training block. Specify `dataset: \"path/to/data.csv\";` or `dataset: \"xor\";`"
+            )
+        })?;
+
+        // 1. Determine input tensor name for the model graph
+        let input_names = self
+            .executor
+            .program()
+            .get_graph(&self.model_graph)
+            .map(|g| g.inputs.iter().map(|id| g.node(*id).name.clone()).collect::<Vec<_>>())
+            .unwrap_or_default();
+        let input_key = input_names.first().cloned().unwrap_or_else(|| "x".to_string());
+        let target_key = "targets";
+
+        // 2. Load dataset batches
+        let batches = self.load_batches(dataset_cfg, &input_key, target_key)?;
+
+        // 3. Run training loop
+        self.train(&batches, target_key)
+    }
+
+    fn load_batches(
+        &self,
+        dataset_cfg: &shrew_ir::graph::DatasetConfig,
+        input_key: &str,
+        target_key: &str,
+    ) -> Result<Vec<HashMap<String, Tensor<B>>>> {
+        let dtype = self.executor.config().default_dtype;
+        let device = self.executor.device();
+
+        if dataset_cfg.format == "xor" || dataset_cfg.path == "xor" {
+            let x_vals = vec![
+                0.0, 0.0,
+                0.0, 1.0,
+                1.0, 0.0,
+                1.0, 1.0,
+            ];
+            let y_vals = vec![0.0, 1.0, 1.0, 0.0];
+
+            let x_tensor = Tensor::<B>::from_f64_slice(&x_vals, (4, 2), dtype, device)?;
+            let y_tensor = Tensor::<B>::from_f64_slice(&y_vals, (4, 1), dtype, device)?;
+
+            let mut batch = HashMap::new();
+            batch.insert(input_key.to_string(), x_tensor);
+            batch.insert(target_key.to_string(), y_tensor);
+            return Ok(vec![batch]);
+        }
+
+        let csv_cfg = shrew_data::csv_dataset::CsvConfig {
+            has_header: dataset_cfg.has_header,
+            feature_cols: dataset_cfg.feature_cols.clone(),
+            target_cols: dataset_cfg.target_cols.clone(),
+            delimiter: b',',
+        };
+
+        let ds = shrew_data::csv_dataset::CsvDataset::load(&dataset_cfg.path, csv_cfg)
+            .map_err(|e| shrew_core::Error::msg(e))?;
+
+        let n_samples = ds.len();
+        if n_samples == 0 {
+            return Err(shrew_core::Error::msg(format!(
+                "Dataset at '{}' is empty",
+                dataset_cfg.path
+            )));
+        }
+
+        let batch_size = self.batch_size.max(1);
+        let mut batches = Vec::new();
+
+        for chunk_start in (0..n_samples).step_by(batch_size) {
+            let chunk_end = (chunk_start + batch_size).min(n_samples);
+            let b_len = chunk_end - chunk_start;
+
+            let feat_len = ds.feature_shape().iter().product::<usize>();
+            let tgt_len = ds.target_shape().iter().product::<usize>();
+
+            let mut feat_buf = Vec::with_capacity(b_len * feat_len);
+            let mut tgt_buf = Vec::with_capacity(b_len * tgt_len);
+
+            for i in chunk_start..chunk_end {
+                let sample = ds.get(i);
+                feat_buf.extend_from_slice(&sample.features);
+                tgt_buf.extend_from_slice(&sample.target);
+            }
+
+            let x_tensor = Tensor::<B>::from_f64_slice(&feat_buf, vec![b_len, feat_len], dtype, device)?;
+            let y_tensor = Tensor::<B>::from_f64_slice(&tgt_buf, vec![b_len, tgt_len], dtype, device)?;
+
+            let mut batch = HashMap::new();
+            batch.insert(input_key.to_string(), x_tensor);
+            batch.insert(target_key.to_string(), y_tensor);
+            batches.push(batch);
+        }
+
+        Ok(batches)
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -303,3 +412,17 @@ pub fn load_trainer<B: Backend>(
 
     Trainer::<B>::from_program(ir, device, config)
 }
+
+/// Parse, lower, and train a .sw program directly from a file path using its embedded configuration.
+pub fn train_file<B: Backend>(
+    path: &str,
+    device: B::Device,
+    config: RuntimeConfig,
+) -> Result<(Trainer<B>, TrainResult)> {
+    let source = std::fs::read_to_string(path)
+        .map_err(|e| shrew_core::Error::msg(format!("Failed to read '{path}': {e}")))?;
+    let mut trainer = load_trainer::<B>(&source, device, config)?;
+    let result = trainer.train_auto()?;
+    Ok((trainer, result))
+}
+

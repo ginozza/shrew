@@ -590,6 +590,69 @@ pub unsafe extern "C" fn shrew_executor_run_single(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn shrew_executor_train(
+    exec: *mut shrew_executor,
+    out_final_loss: *mut f64,
+) -> i32 {
+    clear_error();
+    if exec.is_null() {
+        set_error("Null pointer passed to shrew_executor_train");
+        return -1;
+    }
+
+    match (*exec).inner.train() {
+        Ok(res) => {
+            if !out_final_loss.is_null() {
+                *out_final_loss = res.final_loss;
+            }
+            res.epochs.len() as i32
+        }
+        Err(e) => {
+            set_error(format!("{e}"));
+            -1
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn shrew_train_file(
+    sw_path: *const c_char,
+    dtype: i32,
+    out_final_loss: *mut f64,
+) -> i32 {
+    clear_error();
+    if sw_path.is_null() {
+        set_error("Null path in shrew_train_file");
+        return -1;
+    }
+
+    let c_str = CStr::from_ptr(sw_path);
+    let path = match c_str.to_str() {
+        Ok(s) => s,
+        Err(e) => {
+            set_error(format!("Invalid UTF-8 path string: {e}"));
+            return -1;
+        }
+    };
+
+    let dt = parse_c_dtype(dtype).unwrap_or(DType::F64);
+    let config = shrew::exec::RuntimeConfig::default().with_dtype(dt);
+
+    match shrew::exec::train_file::<B>(path, CpuDevice, config) {
+        Ok((_trainer, res)) => {
+            if !out_final_loss.is_null() {
+                *out_final_loss = res.final_loss;
+            }
+            res.epochs.len() as i32
+        }
+        Err(e) => {
+            set_error(format!("{e}"));
+            -1
+        }
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn shrew_executor_free(exec: *mut shrew_executor) {
     if !exec.is_null() {
         drop(Box::from_raw(exec));

@@ -199,6 +199,19 @@ impl<B: Backend> Executor<B> {
         &self.device
     }
 
+    /// Train this executor using the @training configuration and dataset defined in its .sw program.
+    pub fn train(&mut self) -> Result<super::train::TrainResult> {
+        let program = self.program.clone();
+        let device = self.device.clone();
+        let config = self.config.clone();
+        let mut trainer = super::train::Trainer::<B>::from_program(program, device, config)?;
+        let result = trainer.train_auto()?;
+        for (key, param) in trainer.executor.params {
+            self.params.insert(key, param);
+        }
+        Ok(result)
+    }
+
     /// Execute a named graph with given inputs.
     pub fn run(
         &self,
