@@ -22,4 +22,5 @@ shrew-data.workspace = true
 shrew-ir.workspace = true
 serde_json.workspace = true
 half.workspace = true
+rayon.workspace = true
 shrew-cuda = { workspace = true, optional = true }

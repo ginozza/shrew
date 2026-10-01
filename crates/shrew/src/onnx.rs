@@ -34,6 +34,7 @@ use shrew_core::error::Result;
 use shrew_core::tensor::Tensor;
 
 use shrew_nn::Module;
+use shrew_ir::graph::{Dim, DType as IrDType, IrGraph, IrType, OpKind};
 
 // =============================================================================
 // ONNX constants
@@ -759,6 +760,181 @@ where
         model.initializers.push(onnx_tensor);
     }
 
+    model.save(path)
+}
+
+/// Convert a `shrew_ir::graph::IrGraph` into an `OnnxModel`.
+///
+/// Maps graph inputs, graph outputs, and internal computation nodes into
+/// standard ONNX nodes (e.g. `MatMul`, `Add`, `Relu`, `Softmax`, etc.).
+pub fn ir_graph_to_onnx(graph: &IrGraph) -> Result<OnnxModel> {
+    let mut model = OnnxModel::new(&graph.name);
+
+    // Inputs
+    for &input_id in &graph.inputs {
+        let node = &graph.nodes[input_id.0];
+        let (dims, dtype) = match &node.output_type {
+            IrType::Tensor { shape, dtype } => {
+                let d: Vec<i64> = shape
+                    .iter()
+                    .map(|dim| match dim {
+                        Dim::Fixed(n) => *n,
+                        _ => -1,
+                    })
+                    .collect();
+                let onnx_dt = match dtype {
+                    IrDType::F32 => ONNX_FLOAT,
+                    IrDType::F64 => ONNX_DOUBLE,
+                    IrDType::F16 => ONNX_FLOAT16,
+                    IrDType::Bf16 => ONNX_BFLOAT16,
+                    IrDType::I8 => ONNX_INT8,
+                    IrDType::U8 => ONNX_UINT8,
+                    IrDType::I32 => ONNX_INT32,
+                    IrDType::I64 => ONNX_INT64,
+                    _ => ONNX_FLOAT,
+                };
+                (d, onnx_dt)
+            }
+            _ => (vec![-1], ONNX_FLOAT),
+        };
+        model.inputs.push((node.name.clone(), dims, dtype));
+    }
+
+    // Outputs
+    for out in &graph.outputs {
+        let node = &graph.nodes[out.node_id.0];
+        let (dims, dtype) = match &node.output_type {
+            IrType::Tensor { shape, dtype } => {
+                let d: Vec<i64> = shape
+                    .iter()
+                    .map(|dim| match dim {
+                        Dim::Fixed(n) => *n,
+                        _ => -1,
+                    })
+                    .collect();
+                let onnx_dt = match dtype {
+                    IrDType::F32 => ONNX_FLOAT,
+                    IrDType::F64 => ONNX_DOUBLE,
+                    IrDType::F16 => ONNX_FLOAT16,
+                    IrDType::Bf16 => ONNX_BFLOAT16,
+                    IrDType::I8 => ONNX_INT8,
+                    IrDType::U8 => ONNX_UINT8,
+                    IrDType::I32 => ONNX_INT32,
+                    IrDType::I64 => ONNX_INT64,
+                    _ => ONNX_FLOAT,
+                };
+                (d, onnx_dt)
+            }
+            _ => (vec![-1], ONNX_FLOAT),
+        };
+        model.outputs.push((out.name.clone(), dims, dtype));
+    }
+
+    // Nodes
+    for node in &graph.nodes {
+        if graph.inputs.contains(&node.id) {
+            continue;
+        }
+
+        let input_names: Vec<String> = node
+            .inputs
+            .iter()
+            .map(|id| graph.nodes[id.0].name.clone())
+            .collect();
+        let output_names = vec![node.name.clone()];
+        let mut attributes = HashMap::new();
+
+        let op_type = match &node.op {
+            OpKind::Add => "Add",
+            OpKind::Sub => "Sub",
+            OpKind::Mul => "Mul",
+            OpKind::Div => "Div",
+            OpKind::Pow => "Pow",
+            OpKind::MatMul => "MatMul",
+            OpKind::Relu => "Relu",
+            OpKind::Gelu => "Gelu",
+            OpKind::Silu => "Silu",
+            OpKind::Sigmoid => "Sigmoid",
+            OpKind::Tanh => "Tanh",
+            OpKind::Exp => "Exp",
+            OpKind::Log => "Log",
+            OpKind::Sqrt => "Sqrt",
+            OpKind::Neg => "Neg",
+            OpKind::Transpose => "Transpose",
+            OpKind::Reshape { .. } => "Reshape",
+            OpKind::Identity => "Identity",
+            OpKind::Equal => "Equal",
+            OpKind::NotEqual => "NotEqual",
+            OpKind::Less => "Less",
+            OpKind::Greater => "Greater",
+            OpKind::LessEqual => "LessOrEqual",
+            OpKind::GreaterEqual => "GreaterOrEqual",
+            OpKind::And => "And",
+            OpKind::Or => "Or",
+            OpKind::Not => "Not",
+            OpKind::Softmax { dim } => {
+                attributes.insert("axis".to_string(), OnnxAttribute::Int(*dim));
+                "Softmax"
+            }
+            OpKind::Sum { dims, keepdim } => {
+                attributes.insert("axes".to_string(), OnnxAttribute::Ints(dims.clone()));
+                attributes.insert("keepdims".to_string(), OnnxAttribute::Int(*keepdim as i64));
+                "ReduceSum"
+            }
+            OpKind::Mean { dims, keepdim } => {
+                attributes.insert("axes".to_string(), OnnxAttribute::Ints(dims.clone()));
+                attributes.insert("keepdims".to_string(), OnnxAttribute::Int(*keepdim as i64));
+                "ReduceMean"
+            }
+            OpKind::Max { dim, keepdim } => {
+                attributes.insert("axes".to_string(), OnnxAttribute::Ints(vec![*dim]));
+                attributes.insert("keepdims".to_string(), OnnxAttribute::Int(*keepdim as i64));
+                "ReduceMax"
+            }
+            OpKind::Min { dim, keepdim } => {
+                attributes.insert("axes".to_string(), OnnxAttribute::Ints(vec![*dim]));
+                attributes.insert("keepdims".to_string(), OnnxAttribute::Int(*keepdim as i64));
+                "ReduceMin"
+            }
+            OpKind::LayerNorm { eps } => {
+                attributes.insert("epsilon".to_string(), OnnxAttribute::Float(*eps as f32));
+                "LayerNormalization"
+            }
+            OpKind::BatchNorm { eps } => {
+                attributes.insert("epsilon".to_string(), OnnxAttribute::Float(*eps as f32));
+                "BatchNormalization"
+            }
+            OpKind::Linear { .. } => "Gemm",
+            OpKind::Dropout { p } => {
+                attributes.insert("ratio".to_string(), OnnxAttribute::Float(*p as f32));
+                "Dropout"
+            }
+            OpKind::Concat { dim } => {
+                attributes.insert("axis".to_string(), OnnxAttribute::Int(*dim));
+                "Concat"
+            }
+            OpKind::Permute { dims } => {
+                attributes.insert("perm".to_string(), OnnxAttribute::Ints(dims.clone()));
+                "Transpose"
+            }
+            _ => &node.name,
+        };
+
+        model.nodes.push(OnnxNode {
+            inputs: input_names,
+            outputs: output_names,
+            op_type: op_type.to_string(),
+            name: node.name.clone(),
+            attributes,
+        });
+    }
+
+    Ok(model)
+}
+
+/// Export an entire `shrew_ir::graph::IrGraph` as an ONNX model file.
+pub fn export_ir_graph<P: AsRef<Path>>(path: P, graph: &IrGraph) -> Result<()> {
+    let model = ir_graph_to_onnx(graph)?;
     model.save(path)
 }
 
@@ -1906,5 +2082,49 @@ mod tests {
             OnnxAttribute::Int(v) => assert_eq!(v, 42),
             _ => panic!("expected Int"),
         }
+    }
+
+    #[test]
+    fn test_ir_graph_to_onnx_roundtrip() {
+        let mut ir_graph = IrGraph::new("demo_ir");
+        let x = ir_graph.add_node(
+            "x",
+            OpKind::Identity,
+            vec![],
+            IrType::Tensor {
+                shape: vec![Dim::Fixed(2), Dim::Fixed(2)],
+                dtype: IrDType::F32,
+            },
+        );
+        ir_graph.inputs.push(x);
+
+        let relu = ir_graph.add_node(
+            "out",
+            OpKind::Relu,
+            vec![x],
+            IrType::Tensor {
+                shape: vec![Dim::Fixed(2), Dim::Fixed(2)],
+                dtype: IrDType::F32,
+            },
+        );
+        ir_graph.add_output(relu);
+
+        let path = std::env::temp_dir().join("shrew_test_ir_export.onnx");
+        export_ir_graph(&path, &ir_graph).unwrap();
+
+        let loaded = load_onnx_graph(&path).unwrap();
+        assert_eq!(loaded.nodes.len(), 1);
+        assert_eq!(loaded.nodes[0].op_type, "Relu");
+        assert_eq!(loaded.output_names, vec!["out"]);
+
+        let t = T::from_f64_slice(&[-2.0, 3.0, -1.0, 4.0], vec![2, 2], DType::F32, &DEV).unwrap();
+        let mut inputs = HashMap::new();
+        inputs.insert("x".into(), t);
+
+        let outputs = run_onnx_graph::<B>(&loaded, &inputs, &DEV).unwrap();
+        let out = outputs.get("out").unwrap();
+        assert_eq!(out.to_f64_vec().unwrap(), vec![0.0, 3.0, 0.0, 4.0]);
+
+        let _ = fs::remove_file(&path);
     }
 }

@@ -1031,6 +1031,12 @@ pub struct JitExecutor<B: Backend> {
     device: B::Device,
     /// Initialized parameters.
     params: HashMap<(String, String), Tensor<B>>,
+    /// Persistent transformer blocks (keyed by dst slot).
+    transformer_blocks: std::cell::RefCell<HashMap<usize, shrew_nn::TransformerBlock<B>>>,
+    /// Persistent multi-head attention blocks (keyed by dst slot).
+    mha_blocks: std::cell::RefCell<HashMap<usize, shrew_nn::MultiHeadAttention<B>>>,
+    /// Persistent blocks inside Repeat instructions (keyed by (dst slot, repeat index)).
+    repeat_blocks: std::cell::RefCell<HashMap<(usize, usize), shrew_nn::TransformerBlock<B>>>,
 }
 
 /// Result of a JIT execution.
@@ -1085,8 +1091,12 @@ impl<B: Backend> JitExecutor<B> {
             config,
             device,
             params,
+            transformer_blocks: std::cell::RefCell::new(HashMap::new()),
+            mha_blocks: std::cell::RefCell::new(HashMap::new()),
+            repeat_blocks: std::cell::RefCell::new(HashMap::new()),
         })
     }
+
 
     /// Get compilation statistics for a graph.
     pub fn stats(&self, graph_name: &str) -> Option<&CompileStats> {
@@ -1352,13 +1362,17 @@ impl<B: Backend> JitExecutor<B> {
                         .dims()
                         .last()
                         .ok_or_else(|| shrew_core::Error::msg("MHA input has no dimensions"))?;
-                    let mha = shrew_nn::MultiHeadAttention::<B>::new(
-                        d_model,
-                        *n_heads,
-                        inp.dtype(),
-                        inp.device(),
-                    )?;
-                    slots[*dst] = Some(mha.forward(inp)?);
+                    let mut mhas = self.mha_blocks.borrow_mut();
+                    if !mhas.contains_key(dst) {
+                        let mha = shrew_nn::MultiHeadAttention::<B>::new(
+                            d_model,
+                            *n_heads,
+                            inp.dtype(),
+                            inp.device(),
+                        )?;
+                        mhas.insert(*dst, mha);
+                    }
+                    slots[*dst] = Some(mhas.get(dst).unwrap().forward(inp)?);
                 }
 
                 Instruction::TransformerBlock {
@@ -1370,16 +1384,23 @@ impl<B: Backend> JitExecutor<B> {
                     let dims = inp.dims();
                     let d_model = dims[dims.len() - 1];
                     let d_ff = d_model * 4;
-                    let block = shrew_nn::TransformerBlock::<B>::new(
-                        d_model,
-                        *n_heads,
-                        d_ff,
-                        true,
-                        inp.dtype(),
-                        inp.device(),
-                    )?;
+                    let mut blocks = self.transformer_blocks.borrow_mut();
+                    if !blocks.contains_key(dst) {
+                        let block = shrew_nn::TransformerBlock::<B>::new(
+                            d_model,
+                            *n_heads,
+                            d_ff,
+                            true,
+                            inp.dtype(),
+                            inp.device(),
+                        )?;
+                        blocks.insert(*dst, block);
+                    }
+                    let block = blocks.get(dst).unwrap();
+                    block.set_training(self.config.training);
                     slots[*dst] = Some(block.forward(inp)?);
                 }
+
 
                 Instruction::Dropout { src, dst, p } => {
                     let t = get_slot(&slots, *src)?;
@@ -1433,11 +1454,37 @@ impl<B: Backend> JitExecutor<B> {
                 } => {
                     let t = get_slot(&slots, *src)?;
                     let mut current = t.clone();
-                    for _ in 0..(*count as u32) {
-                        current = execute_body_op::<B>(body_op, &current, &self.device)?;
+                    for i in 0..(*count as usize) {
+                        match body_op.as_ref() {
+                            OpKind::TransformerBlock { n_heads } => {
+                                let dims = current.dims();
+                                let d_model = dims[dims.len() - 1];
+                                let d_ff = d_model * 4;
+                                let mut blocks = self.repeat_blocks.borrow_mut();
+                                let key = (*dst, i);
+                                if !blocks.contains_key(&key) {
+                                    let block = shrew_nn::TransformerBlock::<B>::new(
+                                        d_model,
+                                        *n_heads as usize,
+                                        d_ff,
+                                        true,
+                                        current.dtype(),
+                                        current.device(),
+                                    )?;
+                                    blocks.insert(key, block);
+                                }
+                                let block = blocks.get(&key).unwrap();
+                                block.set_training(self.config.training);
+                                current = block.forward(&current)?;
+                            }
+                            _ => {
+                                current = execute_body_op::<B>(body_op, &current, &self.device)?;
+                            }
+                        }
                     }
                     slots[*dst] = Some(current);
                 }
+
 
                 Instruction::Call {
                     graph_name,

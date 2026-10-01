@@ -102,8 +102,9 @@ pub mod prelude {
         LSTM, RNN,
     };
     pub use crate::onnx::{
-        export_tensors as export_onnx_tensors, export_weights as export_onnx, load_onnx_weights,
-        OnnxAttribute, OnnxModel, OnnxNode, OnnxTensor,
+        export_ir_graph, export_tensors as export_onnx_tensors, export_weights as export_onnx,
+        ir_graph_to_onnx, load_onnx_graph, load_onnx_weights, run_onnx_graph, OnnxAttribute,
+        OnnxGraph, OnnxModel, OnnxNode, OnnxTensor,
     };
     pub use crate::optim::EMA;
     pub use crate::optim::{clip_grad_norm, clip_grad_value, grad_norm, GradAccumulator};

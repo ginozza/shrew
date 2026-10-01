@@ -106,6 +106,10 @@ pub struct Executor<B: Backend> {
     device: B::Device,
     /// Initialized parameter tensors, keyed by (graph_name, param_name).
     params: HashMap<(String, String), Tensor<B>>,
+    /// Persistent transformer blocks (e.g. from TransformerBlock or Repeat nodes).
+    transformer_blocks: std::sync::RwLock<HashMap<String, TransformerBlock<B>>>,
+    /// Persistent multi-head attention blocks.
+    mha_blocks: std::sync::RwLock<HashMap<String, shrew_nn::MultiHeadAttention<B>>>,
 }
 
 impl<B: Backend> Executor<B> {
@@ -116,6 +120,8 @@ impl<B: Backend> Executor<B> {
             config,
             device,
             params: HashMap::new(),
+            transformer_blocks: std::sync::RwLock::new(HashMap::new()),
+            mha_blocks: std::sync::RwLock::new(HashMap::new()),
         };
         exec.init_all_params()?;
         Ok(exec)
@@ -141,9 +147,16 @@ impl<B: Backend> Executor<B> {
         &self.params
     }
 
-    /// Get flattened parameter list (all graphs).
+    /// Get flattened parameter list (all graphs and persistent blocks).
     pub fn all_params(&self) -> Vec<Tensor<B>> {
-        self.params.values().cloned().collect()
+        let mut list: Vec<Tensor<B>> = self.params.values().cloned().collect();
+        for tb in self.transformer_blocks.read().unwrap().values() {
+            list.extend(tb.parameters());
+        }
+        for mha in self.mha_blocks.read().unwrap().values() {
+            list.extend(mha.parameters());
+        }
+        list
     }
 
     /// Get all parameters as `(key, tensor)` pairs, where key = `"graph/param"`.
@@ -153,6 +166,16 @@ impl<B: Backend> Executor<B> {
             .iter()
             .map(|((g, p), t)| (format!("{g}/{p}"), t.clone()))
             .collect();
+        for (name, tb) in self.transformer_blocks.read().unwrap().iter() {
+            for (pname, param) in tb.named_parameters() {
+                pairs.push((format!("{name}/{pname}"), param));
+            }
+        }
+        for (name, mha) in self.mha_blocks.read().unwrap().iter() {
+            for (pname, param) in mha.named_parameters() {
+                pairs.push((format!("{name}/{pname}"), param));
+            }
+        }
         pairs.sort_by(|a, b| a.0.cmp(&b.0));
         pairs
     }
@@ -438,13 +461,17 @@ impl<B: Backend> Executor<B> {
                     .dims()
                     .last()
                     .ok_or_else(|| shrew_core::Error::msg("MHA input has no dimensions"))?;
-                let mha = shrew_nn::MultiHeadAttention::<B>::new(
-                    d_model,
-                    *n_heads as usize,
-                    input.dtype(),
-                    input.device(),
-                )?;
-                mha.forward(input)
+                let mut mhas = self.mha_blocks.write().unwrap();
+                if !mhas.contains_key(&node.name) {
+                    let mha = shrew_nn::MultiHeadAttention::<B>::new(
+                        d_model,
+                        *n_heads as usize,
+                        input.dtype(),
+                        input.device(),
+                    )?;
+                    mhas.insert(node.name.clone(), mha);
+                }
+                mhas.get(&node.name).unwrap().forward(input)
             }
 
             // ── TransformerBlock ──
@@ -459,16 +486,24 @@ impl<B: Backend> Executor<B> {
                 }
                 let d_model = dims[2];
                 let d_ff = d_model * 4;
-                let block = TransformerBlock::<B>::new(
-                    d_model,
-                    *n_heads as usize,
-                    d_ff,
-                    true, // causal by default
-                    input.dtype(),
-                    input.device(),
-                )?;
+                let mut blocks = self.transformer_blocks.write().unwrap();
+                if !blocks.contains_key(&node.name) {
+                    let block = TransformerBlock::<B>::new(
+                        d_model,
+                        *n_heads as usize,
+                        d_ff,
+                        true, // causal by default
+                        input.dtype(),
+                        input.device(),
+                    )?;
+                    blocks.insert(node.name.clone(), block);
+                }
+                let block = blocks.get(&node.name).unwrap();
+                block.set_training(self.config.training);
                 block.forward(input)
             }
+
+
 
             // ── Dropout ──
             OpKind::Dropout { p } => {
@@ -521,8 +556,9 @@ impl<B: Backend> Executor<B> {
             OpKind::Repeat { count, body_op } => {
                 let input = require_input(&input_tensors, 0, &node.name)?;
                 let mut current = input.clone();
-                for _ in 0..*count {
-                    current = self.execute_body_op(body_op, &current)?;
+                for i in 0..*count {
+                    let key = format!("{}/iter_{}", node.name, i);
+                    current = self.execute_body_op(body_op, &current, &key)?;
                 }
                 Ok(current)
             }
@@ -697,7 +733,7 @@ impl<B: Backend> Executor<B> {
     }
 
     /// Execute a body op (used inside Repeat).
-    fn execute_body_op(&self, op: &OpKind, input: &Tensor<B>) -> Result<Tensor<B>> {
+    fn execute_body_op(&self, op: &OpKind, input: &Tensor<B>, key: &str) -> Result<Tensor<B>> {
         match op {
             OpKind::TransformerBlock { n_heads } => {
                 let dims = input.dims();
@@ -709,14 +745,20 @@ impl<B: Backend> Executor<B> {
                 }
                 let d_model = dims[2];
                 let d_ff = d_model * 4;
-                let block = TransformerBlock::<B>::new(
-                    d_model,
-                    *n_heads as usize,
-                    d_ff,
-                    true,
-                    input.dtype(),
-                    input.device(),
-                )?;
+                let mut blocks = self.transformer_blocks.write().unwrap();
+                if !blocks.contains_key(key) {
+                    let block = TransformerBlock::<B>::new(
+                        d_model,
+                        *n_heads as usize,
+                        d_ff,
+                        true,
+                        input.dtype(),
+                        input.device(),
+                    )?;
+                    blocks.insert(key.to_string(), block);
+                }
+                let block = blocks.get(key).unwrap();
+                block.set_training(self.config.training);
                 block.forward(input)
             }
             OpKind::MultiHeadAttention { n_heads } => {
@@ -724,13 +766,17 @@ impl<B: Backend> Executor<B> {
                     .dims()
                     .last()
                     .ok_or_else(|| shrew_core::Error::msg("MHA input has no dimensions"))?;
-                let mha = shrew_nn::MultiHeadAttention::<B>::new(
-                    d_model,
-                    *n_heads as usize,
-                    input.dtype(),
-                    input.device(),
-                )?;
-                mha.forward(input)
+                let mut mhas = self.mha_blocks.write().unwrap();
+                if !mhas.contains_key(key) {
+                    let mha = shrew_nn::MultiHeadAttention::<B>::new(
+                        d_model,
+                        *n_heads as usize,
+                        input.dtype(),
+                        input.device(),
+                    )?;
+                    mhas.insert(key.to_string(), mha);
+                }
+                mhas.get(key).unwrap().forward(input)
             }
             // For other repeated ops, dispatch through the main execute_node
             // infrastructure by returning an error so the caller knows.
@@ -741,6 +787,7 @@ impl<B: Backend> Executor<B> {
             ))),
         }
     }
+
 
     // ─────────────────────────────────────────────────────────────────────
     // Parameter initialization

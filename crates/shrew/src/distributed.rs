@@ -188,14 +188,13 @@ where
         // Split into chunks along batch dimension
         let chunks = x.chunk(effective_workers, 0)?;
 
-        // Run forward on each chunk (sequentially for now - rayon requires
-        // the closure to be Send, which Result<Tensor<B>> satisfies)
-        // NOTE: True multi-device parallelism requires each replica on a
-        // separate device. For CPU, rayon gives thread-level parallelism.
-        let mut outputs = Vec::with_capacity(chunks.len());
-        for chunk in &chunks {
-            outputs.push(self.module.forward(chunk)?);
-        }
+        // Run forward on each chunk in parallel using Rayon thread pool
+        use rayon::prelude::*;
+        let outputs: Result<Vec<Tensor<B>>> = chunks
+            .par_iter()
+            .map(|chunk| self.module.forward(chunk))
+            .collect();
+        let outputs = outputs?;
 
         // Concatenate results
         Tensor::cat(&outputs, 0)
@@ -885,6 +884,33 @@ mod tests {
         assert!(!metrics.skipped);
         assert!(metrics.loss >= 0.0);
         assert_eq!(metrics.loss_scale, 65536.0);
+    }
+
+    #[cfg(feature = "cuda")]
+    #[test]
+    fn test_mixed_precision_trainer_gpu() {
+        use shrew_cuda::{CudaBackend, CudaDevice};
+        type GpuB = CudaBackend;
+        if let Ok(dev) = CudaDevice::new(0) {
+            let linear = shrew_nn::Linear::<GpuB>::new(4, 2, true, DType::F16, &dev).unwrap();
+            let optimizer = shrew_optim::SGD::new(linear.parameters(), 0.01, 0.0, 0.0);
+            let config = LossScaleConfig {
+                init_scale: 1.0,
+                ..Default::default()
+            };
+            let mut trainer = MixedPrecisionTrainer::new(linear, optimizer, DType::F16, config);
+
+            let input = Tensor::<GpuB>::randn(vec![2, 4], DType::F16, &dev).unwrap();
+            let target = Tensor::<GpuB>::zeros(vec![2, 2], DType::F16, &dev).unwrap();
+
+            let metrics = trainer
+                .train_step(&input, &target, |pred, tgt| shrew_nn::mse_loss(pred, tgt))
+                .unwrap();
+
+            assert!(!metrics.skipped);
+            assert!(metrics.loss >= 0.0);
+            assert_eq!(metrics.compute_dtype, DType::F16);
+        }
     }
 
     // ── Pipeline ──

@@ -1381,6 +1381,7 @@ name = "shrew"
 version = "0.1.0"
 dependencies = [
  "half",
+ "rayon",
  "serde_json",
  "shrew-core",
  "shrew-cpu",
@@ -1482,6 +1483,7 @@ dependencies = [
  "shrew",
  "shrew-core",
  "shrew-cpu",
+ "shrew-cuda",
  "shrew-data",
  "shrew-nn",
  "shrew-optim",
