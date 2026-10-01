@@ -1,0 +1,26 @@
+[package]
+name = "shrew-c"
+description = "C FFI and native shared library for Shrew deep learning library"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+name = "shrew"
+crate-type = ["cdylib", "staticlib"]
+
+[features]
+default = []
+cuda = ["shrew/cuda", "dep:shrew-cuda"]
+
+[dependencies]
+shrew.workspace = true
+shrew-core.workspace = true
+shrew-cpu.workspace = true
+shrew-nn.workspace = true
+shrew-optim.workspace = true
+shrew-cuda = { workspace = true, optional = true }

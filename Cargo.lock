@@ -1393,6 +1393,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "shrew-c"
+version = "0.1.0"
+dependencies = [
+ "shrew",
+ "shrew-core",
+ "shrew-cpu",
+ "shrew-cuda",
+ "shrew-nn",
+ "shrew-optim",
+]
+
+[[package]]
 name = "shrew-cli"
 version = "0.1.0"
 dependencies = [

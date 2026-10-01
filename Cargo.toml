@@ -11,6 +11,7 @@ members = [
     "crates/shrew",
     "crates/shrew-cli",
     "crates/shrew-python",
+    "crates/shrew-c",
     "examples/linear_regression",
     "examples/mlp_xor",
     "examples/mnist",
@@ -30,6 +31,7 @@ default-members = [
     "crates/shrew-data",
     "crates/shrew",
     "crates/shrew-cli",
+    "crates/shrew-c",
     "examples/linear_regression",
     "examples/mlp_xor",
     "examples/mnist",
@@ -52,6 +54,7 @@ categories = ["science", "mathematics"]
 [workspace.dependencies]
 # Internal crates
 shrew = { path = "crates/shrew", version = "0.1.0" }
+shrew-c = { path = "crates/shrew-c", version = "0.1.0" }
 shrew-core = { path = "crates/shrew-core", version = "0.1.0" }
 shrew-cpu = { path = "crates/shrew-cpu", version = "0.1.0" }
 shrew-cuda = { path = "crates/shrew-cuda", version = "0.1.0" }
