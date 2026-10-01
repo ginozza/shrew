@@ -312,7 +312,26 @@ impl<B: Backend> Trainer<B> {
             delimiter: b',',
         };
 
-        let ds = shrew_data::csv_dataset::CsvDataset::load(&dataset_cfg.path, csv_cfg)
+        let csv_path = if std::path::Path::new(&dataset_cfg.path).exists() {
+            dataset_cfg.path.clone()
+        } else if let Ok(cwd) = std::env::current_dir() {
+            let p1 = cwd.join(&dataset_cfg.path);
+            let p2 = cwd.join("..").join(&dataset_cfg.path);
+            let p3 = cwd.join("../..").join(&dataset_cfg.path);
+            if p1.exists() {
+                p1.to_string_lossy().to_string()
+            } else if p2.exists() {
+                p2.to_string_lossy().to_string()
+            } else if p3.exists() {
+                p3.to_string_lossy().to_string()
+            } else {
+                dataset_cfg.path.clone()
+            }
+        } else {
+            dataset_cfg.path.clone()
+        };
+
+        let ds = shrew_data::csv_dataset::CsvDataset::load(&csv_path, csv_cfg)
             .map_err(|e| shrew_core::Error::msg(e))?;
 
         let n_samples = ds.len();

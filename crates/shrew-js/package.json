@@ -1,0 +1,13 @@
+{
+  "name": "shrew",
+  "version": "0.1.0",
+  "description": "Official JavaScript / Node.js bindings for Shrew deep learning engine",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "dependencies": {
+    "koffi": "^2.9.0"
+  }
+}

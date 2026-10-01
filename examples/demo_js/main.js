@@ -1,4 +1,4 @@
-import { train } from './shrew.js';
+import shrew from 'shrew';
 
-const res = train('examples/model.sw');
+const res = shrew.train('examples/model.sw');
 console.log(`Epochs: ${res.epochs}, Loss: ${res.loss.toFixed(6)}`);

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
+    "shrew": "file:../../crates/shrew-js",
     "koffi": "^2.9.0"
   }
 }
